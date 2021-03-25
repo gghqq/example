@@ -1,14 +1,8 @@
-package queue;
+package 数据结构.queue;
 
 import com.google.common.collect.Queues;
 
-import javax.xml.ws.Service;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Vector;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @ClassName Basket

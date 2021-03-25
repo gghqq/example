@@ -14,6 +14,9 @@ package demo;
  **/
 
 public class FinalDemo {
+
+    public FinalDemo(){};
+
     private static final StringBuilder s = new StringBuilder();
 
     private static  final int inta = 1;

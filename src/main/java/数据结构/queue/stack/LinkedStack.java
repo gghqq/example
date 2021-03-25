@@ -1,4 +1,4 @@
-package queue.stack;
+package 数据结构.queue.stack;
 
 /**
  * @ClassName A
