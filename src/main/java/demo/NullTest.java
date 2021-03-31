@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class NullTest {
     public static void main(String[] args){
-        String[] a = {"1","2","3","4"};
-        System.out.println(a[3]);
+//        String[] a = {"1","2","3","4"};
+//        System.out.println(a[3]);
     }
 }
