@@ -8,7 +8,7 @@ package demo;
  * 2.被final修饰的方法不能重写
  * 3.被final修饰的变量指针的引用地址不能更改,但是指向的内容可以更改;
  * 4.被final修饰的常量不能更改
- *
+ * String本身就是被final修饰的类
  * @Author agan
  * @Date 2021/3/24 21:03
  **/
