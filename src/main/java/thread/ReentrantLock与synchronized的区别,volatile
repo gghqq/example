@@ -1,0 +1,25 @@
+2.ReentrantLock与synchronized的区别
+1. 可重入 ReentrantLock 和 synchronized 关键字一样，都是可重入锁，不过两者实现原理稍有差别，
+   ReentrantLock 利用 AQS 的的 state 状态来判断资源是否已锁，同一线程重入加锁， state 的状态 +1 ; 同一线程重入解锁, state 状态 -1 (解锁必须为当前独占线程，否则异常);
+   当 state 为 0 时解锁成功。
+2. synchronized 关键字是自动进行加锁、解锁的，而 ReentrantLock 需要 lock() 和 unlock() 方法配合 try/finally 语句块来完成，来手动加锁、解锁。
+3. synchronized 关键字无法设置锁的超时时间，如果一个获得锁的线程内部发生死锁，那么其他线程就会一直进入阻塞状态，
+   而 ReentrantLock 提供 tryLock 方法，允许设置线程获取锁的超时时间，如果超时，则跳过，不进行任何操作，避免死锁的发生。
+4. synchronized 关键字是一种非公平锁，先抢到锁的线程先执行。而 ReentrantLock 的构造方法中允许设置 true/false 来实现公平、非公平锁，如果设置为 true ，则线程获取锁要遵循"先来后到"的规则，每次都会构造一个线程 Node ，然后到双向链表的"尾巴"后面排队，等待前面的 Node 释放锁资源。
+5. 可中断锁 ReentrantLock 中的 lockIncorruptibly() 方法使得线程可以在被阻塞时响应中断，比如一个线程 t1 通过 lockIncorruptibly() 方法获取到一个可重入锁，
+   并执行一个长时间的任务，另一个线程通过 interrupt() 方法就可以立刻打断 t1 线程的执行，来获取t1持有的那个可重入锁。
+   而通过 ReentrantLock 的 lock() 方法或者 Synchronized 持有锁的线程是不会响应其他线程的 interrupt() 方法的，直到该方法主动释放锁之后才会响应 interrupt() 方法。
+
+
+volatile: https://blog.csdn.net/gongzi2311/article/details/20715185
+Volatile 变量具有 synchronized 的可见性特性，但是不具备原子特性。
+这就是说线程能够自动发现 volatile 变量的最新值。Volatile 变量可用于提供线程安全，但是只能应用于非常有限的一组用例：多个变量之间或者某个变量的当前值与修改后值之间没有约束。
+没有volatile修饰的变量,线程在读取的时候会从主存复制一份到cpu缓存里面进行操作,并不确定什么时候再写回主存.
+volatile修饰后,每次对变量进行操作时都会写回主存.相当于对该变量的操作暴露给其他线程.
+问题:在高并发情况下,volatile从主存读取到操作空间这段时间,变量可能被修改.
+volatile的使用条件(所以使用volatile修饰的变量,只适合直接进行写操作.例如i++,实际是先读再改最后写.):
+1.对变量的写操作不依赖于当前值。
+2.该变量没有包含在具有其他变量的不变式中。
+
+
+
