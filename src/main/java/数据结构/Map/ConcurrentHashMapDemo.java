@@ -6,6 +6,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @ClassName ConcurrentHashMap  https://juejin.cn/post/6936058107973861413
  * @Description
+ * 在JDK1.7中ConcurrentHashMap采用了数组+Segment+分段锁的方式实现。
+ * ConcurrentHashMap中的分段锁称为Segment，它即类似于HashMap的结构，即内部拥有一个Entry数组，
+ * 数组中的每个元素又是一个链表,同时又是一个ReentrantLock（Segment继承了ReentrantLock）。
+ * ConcurrentHashMap定位一个元素的过程需要进行两次Hash操作。第一次Hash定位到Segment，第二次Hash定位到元素所在的链表的头部。
+ * 这种结构的带来的副作用是Hash的过程要比普通的HashMap要长。
+ * 好处是写操作的时候可以只对元素所在的Segment进行加锁即可，不会影响到其他的Segment，在最理想的情况下，ConcurrentHashMap可以最高同时支持Segment数量大小的写操作（刚好这些写操作都非常平均地分布在所有的Segment上）。
+ * 所以，通过这一种结构，ConcurrentHashMap的并发能力可以大大的提高。
+ *
+ * jdk1.8ConcurrentHashMap是基于cas和synchronized实现线程安全 内部大量采用CAS操作
+ *
  * @Author agan
  * @Date 2021/3/29 22:25
  **/
@@ -52,6 +62,77 @@ public class ConcurrentHashMapDemo {
 //     然后对 链表头或者根节点上锁,校验刚刚拿到的node与现有是否一致,一致就kv加载链表后.
 //     或者把kv放入红黑树中.  kv添加完成后最后判断是否需要转红黑树.最后统计数量,并校验是否需要扩容
 
+//     final V putVal(K key, V value, boolean onlyIfAbsent) {
+//          //对key和value做校验
+//          if (key == null || value == null) throw new NullPointerException();
+//          int hash = spread(key.hashCode());
+//          int binCount = 0;
+//          for (Node<K,V>[] tab = table;;) {//死循环
+//               // f是头节点
+//               Node<K,V> f; int n, i, fh;
+//               if (tab == null || (n = tab.length) == 0)//如果数组没有初始化，则初始化数组
+//                    tab = initTable();
+//               else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {//获取当前tab中i下标的node，其实是链表或红黑树头节点
+//                    //cas操作，如果当前tab在i下标上的头节点为null，创建新的node添加到i下标处，成功后跳出死循环，不成功继续下一轮循环
+//                    if (casTabAt(tab, i, null,new Node<K,V>(hash, key, value, null)))
+//                         break;
+//               }
+//               else if ((fh = f.hash) == MOVED)//帮助扩容
+//                    tab = helpTransfer(tab, f);
+//               else {
+//                    //链表的处理
+//                    V oldVal = null;
+//                    //为f即头节点上锁
+//                    synchronized (f) {
+//                         //再次校验最新获取的node是否与f相等，如果不相等再次进入循环，如果相等则进行下步执行
+//                         if (tabAt(tab, i) == f) {
+//                              if (fh >= 0) {
+//                                   binCount = 1;
+//                                   for (Node<K,V> e = f;; ++binCount) {
+//                                        K ek;
+//                                        if (e.hash == hash &&
+//                                                ((ek = e.key) == key ||
+//                                                        (ek != null && key.equals(ek)))) {
+//                                             oldVal = e.val;
+//                                             if (!onlyIfAbsent)
+//                                                  e.val = value;
+//                                             break;
+//                                        }
+//                                        //先将e赋值给pred，然后e=e.next;一直循环到当前的链表的最后一个节点，然后将新的key value创建新的node，追加到当前链表的最后。
+//                                        Node<K,V> pred = e;
+//                                        if ((e = e.next) == null) {
+//                                             pred.next = new Node<K,V>(hash, key,
+//                                                     value, null);
+//                                             break;
+//                                        }
+//                                   }
+//                              }else if (f instanceof TreeBin) {//红黑树操作
+//                                   Node<K,V> p;
+//                                   binCount = 2;
+//                                   if ((p = ((TreeBin<K,V>)f).putTreeVal(hash, key,
+//                                           value)) != null) {
+//                                        oldVal = p.val;
+//                                        if (!onlyIfAbsent)
+//                                             p.val = value;
+//                                   }
+//                              }
+//                         }
+//                    }
+//                    //表示当前key value添加成功了
+//                    if (binCount != 0) {
+//                         //判断是否需要转红黑树
+//                         if (binCount >= TREEIFY_THRESHOLD)
+//                              treeifyBin(tab, i);
+//                         if (oldVal != null)
+//                              return oldVal;
+//                         break;
+//                    }
+//               }
+//          }
+//          //元素添加完成后，统计数量，并且校验是否需要扩容
+//          addCount(1L, binCount);
+//          return null;
+//     }
 
 
 
