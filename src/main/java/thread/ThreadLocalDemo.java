@@ -12,7 +12,7 @@ package thread;
  *
  *  最好把threadlocal设置为static，一个ThreadLocal实例对应当前线程中的一个TSO实例。
  *  因此，如果把ThreadLocal声明为某个类的实例变量（而不是静态变量），那么每创建一个该类的实例就会导致一个新的TSO实例被创建。
- *  设想一下，一个线程内创建两个类实例，这个类中定义了一个非stattic的变量，并把它set到自己的map中，会发生什么，没错两个重复的object，因为两次的threadlocal不一样。
+ *  设想一下，一个线程内创建两个类实例，这个类中定义了一个非static的变量，并把它set到自己的map中，会发生什么，没错两个重复的object，因为两次的threadlocal不一样。
  *  这也是为什么要使用static来标识
  *
  * @Author agan

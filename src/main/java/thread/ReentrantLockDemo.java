@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
  * CAS(CompareAndSwap)cas有三个操作数,内存值V,预期值A,替换值B.当预期值A和内存值V一致时才替换为B.该操作是一个原子操作(不可被中断的一个或一系列操作).
  * Java中,CAS主要是由sun.misc.Unsafe这个类通过JNI调用CPU底层指令实现.
- * ABA问题(原来是A,修改为B后又改为A),解决思路,加标识.   2.循环时间长开销大
+ * ABA问题(原来是A,修改为B后又改为A),解决思路,加标识.   2.循环时间长占用CPU开销大
  *
  *【AQS】 是一个用于构建锁和同步容器的框架。事实上concurrent包内许多类都是基于AQS构建，例如ReentrantLock，Semaphore，CountDownLatch，ReentrantReadWriteLock，FutureTask等。。
  *AQS使用一个FIFO的队列表示排队等待锁的线程，队列头节点称作“哨兵节点”或者“哑节点”，它不与任何线程关联。其他的节点与等待线程关联，每个节点维护一个等待状态waitStatus

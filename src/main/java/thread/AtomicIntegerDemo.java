@@ -14,5 +14,6 @@ public class AtomicIntegerDemo {
 
     public static void main(String[] args){
         System.out.println(ai.incrementAndGet());
+        System.out.println(ai.getAndIncrement());
     }
 }
