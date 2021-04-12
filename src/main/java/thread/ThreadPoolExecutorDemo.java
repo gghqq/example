@@ -18,7 +18,12 @@ import java.util.concurrent.*;
  *    Executors.newCachedThreadPool();        //创建一个缓冲池，缓冲池容量大小为Integer.MAX_VALUE
  *    Executors.newSingleThreadExecutor();   //创建容量为1的缓冲池
  *    Executors.newFixedThreadPool(int);    //创建固定容量大小的缓冲池
- * 如何配置线程池的大小:
+ *    FixedThreadPool：可重用固定线程数的线程池。（适用于负载比较重的服务器） FixedThreadPool使用无界队列LinkedBlockingQueue作为线程池的工作队列 该线程池中的线程数量始终不变。当有一个新的任务提交时，线程池中若有空闲线程，则立即执行。若没有，则新的任务会被暂存在一个任务队列中，待有线程空闲时，便处理在任务队列中的任务。
+ *    SingleThreadExecutor：只会创建一个线程执行任务。（适用于需要保证顺序执行各个任务；并且在任意时间点，没有多线程活动的场景。） SingleThreadExecutorl也使用无界队列LinkedBlockingQueue作为工作队列 若多余一个任务被提交到该线程池，任务会被保存在一个任务队列中，待线程空闲，按先入先出的顺序执行队列中的任务。
+ *    CachedThreadPool：是一个会根据需要调整线程数量的线程池。（大小无界，适用于执行很多的短期异步任务的小程序，或负载较轻的服务器） CachedThreadPool使用没有容量的SynchronousQueue作为线程池的工作队列，但CachedThreadPool的maximumPool是无界的。 线程池的线程数量不确定，但若有空闲线程可以复用，则会优先使用可复用的线程。若所有线程均在工作，又有新的任务提交，则会创建新的线程处理任务。所有线程在当前任务执行完毕后，将返回线程池进行复用。
+ *    ScheduledThreadPool：继承自ThreadPoolExecutor。它主要用来在给定的延迟之后运行任务，或者定期执行任务。使用DelayQueue作为任务队列。
+ *
+ *  如何配置线程池的大小:
  * 　　一般需要根据任务的类型来配置线程池大小：
  * 　　如果是CPU密集型任务，就需要尽量压榨CPU，参考值可以设为 NCPU+1
  * 　　如果是IO密集型任务，参考值可以设置为2*NCPU
