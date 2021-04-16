@@ -1,5 +1,5 @@
 1. sleep is the method of Thread . but the wait  is the method of Object
-2.sleep will not release the object monitor(Lock) (sleep 不会释放 monitor 锁) . but the wait will be release the monitor and add to the Object monitor waiting queue( wait 会释放monitor 锁 并放入 等待队列中)
+2.sleep will not release the object monitor(Lock) (sleep 不会释放 monitor 锁) . but the wait will be release the monitor and add to the Object monitor waiting 数据结构.queue( wait 会释放monitor 锁 并放入 等待队列中)
 3. use sleep not depend on the monitor ,but wait need (使用sleep 不用定义 synchronized  wait 需要)
 
 4. The sleep method not need be wakeup, but wait need (wait(10) 除外)  sleep 不需要唤醒

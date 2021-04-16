@@ -38,7 +38,12 @@
             <version>23.3-jre</version>
             <scope>compile</scope>
         </dependency>
-
+        <!--通用工具類-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.3.10</version>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/cglib/cglib -->
