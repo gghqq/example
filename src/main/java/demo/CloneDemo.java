@@ -7,7 +7,8 @@ import java.io.*;
 /**
  * @ClassName CloneDemo https://www.jianshu.com/p/94dbef2de298
  * @Description: 深拷贝浅拷贝
- * 浅拷贝实现拷贝的类需要实现Cloneable,并重写clone()方法
+ * 浅拷贝实现拷贝的类需要实现Cloneable,并重写clone()方法.
+ *
  * 即默认拷贝构造函数只是对对象进行浅拷贝复制(逐个成员依次拷贝)，即只复制对象引用而不复制资源。
  * 基础数据类型的修改互不影响.引用类型修改后会产生影响
  * 深拷贝的特点
