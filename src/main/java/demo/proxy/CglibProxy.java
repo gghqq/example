@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
  * @Description Cglib可以实现对类的直接代理
  * java动态代理是利用反射机制生成一个实现代理接口的匿名类，在调用具体方法前调用InvokeHandler来处理。
  * 而cglib动态代理是利用asm开源包，对代理对象类的class文件加载进来，通过修改其字节码生成子类来处理。
+ * ! 因为cglib是修改字节码文件生成子类, 所以final修饰的类不可以被cglib代理.
  * @Author agan
  * @Date 2021/3/30 22:32
  **/

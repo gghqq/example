@@ -1,0 +1,116 @@
+
+Java内存泄漏排查或者JVM内存调优
+1）通过jps查看当前系统运行的java进程的ID或者通过ps -ef | grep “指定服务名，例如tomcat等”
+（2）通过使用top -p [pid]的命令来查看指定进程占用系统资源的情况，主要是看内存
+（3）通过使用jstat -gcutil [pid] 60000的命令，来查看GC的情况，每隔1分钟输出一次
+（4）通过观察上面的输出结果，不难看出，是否存在FULL GC的情况，如果发现是因为大量FULL GC造成程序执行缓慢的话，就要接着查看到底是程序的哪些部分占用的
+（5）通过使用jmap -histo:live [pid]来查看进程下各种类型的对象创建了多少个，以及每种对象占用内存的情况
+（6）通过仔细观察上面的输出结果，不难看出，哪一种类型的对象占用内存较多，结合业务应用系统，不难排查出问题出处
+（7）也可以通过jmap命令生成dump文件，使用eclipse的分析插件来分析此文件，查看更多详情信息，也可以通过jhat命令来创建一个http服务，通过浏览器来访问服务器查看dump文件详情。
+
+JVM参数调优
+（1）设置堆内存最大最小值相同，-Xmx与-Xms值相同，这样可以避免堆收缩提升效率
+（2）设置年轻代与老年代的内存占用比例-PremRadio参数为1：2，也可以针对年轻代设置，比如将-Newsize与-MaxNewsize设置相同的值，也是为了避免堆收缩
+（3）如果服务器物理内存资源充足，可以尝试设置回收方式，默认是Serio，可以设置为-UseParalleOldGC，提升回收并行度
+
+
+https://www.imooc.com/article/294586
+一. 默认配置
+配置及说明：
+-Djava.library.path=/usr/local/lib-server       指定非java类包的位置（如：dll，so）。
+-Xms 6144m      JVM初始化堆的大小  一般把Xms与Xmx两个值设成一样是最优的做法，否则会导致jvm有较为频繁的GC，影响系统性能。
+-Xmx 6144m      （MaxHeapSize）JVM堆的最大值。一般不要大于物理内存的80%
+-XX:PermSize=256M       JVM非堆（持久代、永久代、方法区）初始大小
+-XX:MaxPermSize=256m    初始化JVM非堆（持久代、永久代、方法区）最大值。
+-Dsun.net.client.defaultConnectTimeout=60000    连接建立超时设置。
+-Dsun.net.client.defaultReadTimeout=60000       内容获取超时设置。
+-Dnetworkaddress.cache.ttl=300           jvm dns缓存超时的相关设置。
+-Dsun.net.inetaddr.ttl=300               jvm dns缓存超时的相关设置。
+
+-server
+如果tomcat是运行在生产环境中的，这个参数必须加上,-server参数可以使tomcat以server模式运行,这个模式下将拥有：更大、更高的并发处理能力，更快更强捷的JVM垃圾回收机制，可以有更大的负载与吞吐量。
+
+
+二. 调整GC策略
+背景：
+线上频繁发生报警（堆内存占用超过80%），创建dump文件并分析发现，大量数据为char[]、String等类型，
+主要为业务模块产生的临时数据，以mybatis查询缓存字符串为主，无大对象，过段时间full gc会自行回收（但回收量有时较大，有时较少）。考虑调整GC策略。
+
+配置及说明：
+CMS流程：初始标记(CMS-initial-mark) -> 并发标记(CMS-concurrent-mark) -> 重新标记(CMS-remark) -> 并发清除(CMS-concurrent-sweep) ->并发重设状态等待下次CMS的触发(CMS-concurrent-reset)。
+-XX:+UseParNewGC                设置年轻代为并行收集。可与CMS收集同时使用。JDK5.0以上，JVM会根据系统配置自行设置，所以无需再设置此值。
+-XX:+UseConcMarkSweepGC         设置年老代为CMS并发收集。
+-XX:+CMSParallelRemarkEnabled   CMS开启并行remark。
+-XX:+CMSScavengeBeforeRemark    强制remark之前开始一次minor gc，减少remark的暂停时间。
+-Xss            设置每个线程的堆栈大小。JDK5.0以后每个线程堆 栈大小为1M，以前每个线程堆栈大小为256K。
+                根据应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一 个进程内的线程数还是有限制的，不能无限生成，
+                经验值在3000~5000左右。线程栈的大小是个双刃剑，如果设置过小，可能会出现栈溢出，特别是在该线程内有递归、大的循环时出现溢出的可能性更大，
+                如果该值设置过大，就有影响到创建栈的数量，如果是多线程的应用，就会出现内存溢出的错误。线出现过栈溢出。
+
+三. 保底配置
+背景：
+线上频繁发生报警（堆内存占用超过80%），调大堆内存到6144m、调整GC策略后依然存在问题，分析dump文件发现主要数据为char[]、String等类型的临时数据，
+暂增加保底策略，堆内存达到70%后强制CMS GC。
+
+配置及说明：
+-XX:CMSInitiatingOccupancyFraction=70   堆内存使用达到70％后强制开始CMS收集。
+-XX:+UseCMSInitiatingOccupancyOnly      只是用设定的回收阈值(上面指定的70%),如果不指定,JVM仅在第一次使用设定值,后续则自动调整。
+
+
+四. 记录GC日志
+背景：增加gc日志方便后续的JVM优化分析和问题排查。
+-XX:+PrintGCDetails                                 输出GC的详细日志。
+-XX:+PrintGCDateStamps                              输出GC的时间戳（以日期的形式）。
+-Xloggc:/export/Logs/gc.log                         gc日志文件的输出路径。
+-XX:+UseGCLogFileRotation                           打开或关闭GC日志滚动记录功能，要求必须设置 -Xloggc参数。
+-XX:NumberOfGCLogFiles=10                           设置滚动日志文件的个数，必须大于1。
+-XX:GCLogFileSize=1m                                设置滚动日志文件的大小，必须大于8k。
+-XX:+PrintHeapAtGC                                  在进行GC的前后打印出堆的信息，该日志输出量较大，可以不开启。
+-XX:+HeapDumpOnOutOfMemoryError                     当JVM发生OOM时，自动生成DUMP文件。
+-XX:HeapDumpPath=${目录}                             参数表示生成DUMP文件的路径，也可以指定文件名称，例如：-XX:HeapDumpPath=${目录}/java_heapdump.hprof。
+                                                    如果不指定文件名，默认为：java_<pid>_<date>_<time>_heapDump.hprof。
+
+五. 进一步优化
+背景：
+增加70%强制CMS GC配置后不再触发报警，但依然会在某特殊场景频繁full gc。
+通过gc分析，怀疑在这种特殊场景下：内存分配过快导致很多数据在年轻代待的时间太短就进入老年代，致使老年代中不断堆积稍后就无效的对象，最终触发full gc。
+考虑增大年轻代内存、eden与survivor分配策略。
+
+系统分析：
+主要的内存消耗是业务产生的临时性数据，这些数据业务结束后即无效，增大年轻代有助于让这些临时性数据减少进入老年代进而触发full gc的概率，
+但是也不能一味增加年轻代，年轻代过大会影响minor gc过慢，系统吞吐量降低。
+
+配置及说明：
+-XX:+PrintTenuringDistribution  JVM在每次新生代GC时，打印出幸存区中对象的年龄分布。 gc后的
+-XX:MaxTenuringThreshold=4      //表示如果在幸存区移动多少次没有被垃圾回收，进入老年代
+-XX:NewRatio=3                  设置老年代与新生代的比例。指定老年代OC：新生代YC为 3：1。老年代占堆大小的 3/4，新生代占 1/4。
+-XX:SurvivorRatio=4             年轻代中Eden区与Survivor区的大小比值。设置为4，则表示S0C：S1C：EC=1：1：4。该配置默认为8。
+                                增大Survivor区可以容纳更多的存活对象。这样就会防止因为Survivor区太小导致很对存活对象还没有达到MaxTenuringThreshold阈值就直接进入老年代，潜在增大old gc的触发频率。
+-XX:ParallelGCThreads=8         设置并行垃圾收集的线程数量。8表示每次并行垃圾收集将有8个线程执行。如果不明确设置该标志，虚拟机将使用基于可用 (虚拟) 处理器数量计算的默认值。
+                                决定因素是由 Java Runtime。availableProcessors() 方法的返回值 N，如果 N<=8，并行垃圾收集器数=N；
+                                如果 N>8，JVM会调整算法，每超出5/8个CPU启动一个新的线程，并行垃圾收集器数= 8 + ((N – 8) * 5/8) = 3+5*N/8。
+                                如16核对应13线程，32核对应23线程。当 JVM 独占地使用系统和处理器时使用默认设置更有意义。
+                                但是，如果有多个 JVM(或其他耗 CPU 的系统) 在同一台机器上运行，我们应该使用 – XX:ParallelGCThreads 来减少垃圾收集线程数到一个适当的值。
+                                例如，如果 4 个以服务器方式运行的 JVM 同时跑在在一个具有 16 核处理器的机器上,设置 – XX:ParallelGCThreads=4 是明智的，它能使不同 JVM 的垃圾收集器不会相互干扰。
+
+
+
+-Ddruid.registerToSysProperty=true   //修改Tomcat 下的 catalina.sh: 在最后面，不要放在前面或者中间的逻辑判断附近,增加此句代码：set JAVA_OPTS="-Ddruid.registerToSysProperty=true"
+-Djdk.tls.ephemeralDHKeySize=2048
+-Djava.endorsed.dirs= -classpath /data/Application/qdp-oasis-job/bin/bootstrap.jar
+-Dcatalina.base=/data/Application/qdp-oasis-job     catalina.base(工作目录)：指向每个Tomcat目录私有信息的位置，就是conf、logs、temp、webapps和work的父目录。
+-Dcatalina.home=/data/Application/qdp-oasis-job     catalina.home(安装目录)：指向公用信息的位置，就是bin和lib的父目录。
+-Djava.io.tmpdir=/data/Application/qdp-oasis-job/temp
+
+以Tomcat6.0为例，其Tomcat目 录结构如下：
+bin (运行脚本） conf (配置文件） lib (核心库文件） logs (日志目录) temp (临时目录)
+webapps (自动装载的应用程序的目录） work (JVM临时文件目录[Java.io.tmpdir])
+其中只有 bin 和 lib 目录被多个tomcat示例公用，其它目录conf、logs、temp、webapps和work 每个Tomcat实例必须拥有其自己独立的备份。
+明白了上述关系就容易理解catalina.home和catalina.base的用途了:
+catalina.home(安装目录)：指向公用信息的位置，就是bin和lib的父目录。
+catalina.base(工作目录)：指向每个Tomcat目录私有信息的位置，就是conf、logs、temp、webapps和work的父目录。
+仅运行一个Tomcat实例时，这两个属性指向的位置是相同的。
+
+
+
+

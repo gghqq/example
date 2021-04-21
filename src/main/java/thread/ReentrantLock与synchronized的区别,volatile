@@ -11,7 +11,7 @@
    而通过 ReentrantLock 的 lock() 方法或者 Synchronized 持有锁的线程是不会响应其他线程的 interrupt() 方法的，直到该方法主动释放锁之后才会响应 interrupt() 方法。
 
 
-volatile: https://blog.csdn.net/gongzi2311/article/details/20715185
+volatile: https://segmentfault.com/a/1190000021928013   https://blog.csdn.net/gongzi2311/article/details/20715185
 Volatile 变量具有 synchronized 的可见性特性，但是不具备原子特性。
 这就是说线程能够自动发现 volatile 变量的最新值。Volatile 变量可用于提供线程安全，但是只能应用于非常有限的一组用例：多个变量之间或者某个变量的当前值与修改后值之间没有约束。
 没有volatile修饰的变量,线程在读取的时候会从主存复制一份到cpu缓存里面进行操作,并不确定什么时候再写回主存.
