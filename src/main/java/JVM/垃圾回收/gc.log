@@ -1,0 +1,11 @@
+0.199: [GC (System.gc()) [PSYoungGen: 3903K->872K(75776K)] 3903K->880K(249344K), 0.0017495 secs] [Times: user=0.06 sys=0.00, real=0.00 secs]
+0.201: [Full GC (System.gc()) [PSYoungGen: 872K->0K(75776K)] [ParOldGen: 8K->633K(173568K)] 880K->633K(249344K), [Metaspace: 3198K->3198K(1056768K)], 0.0061675 secs] [Times: user=0.00 sys=0.00, real=0.02 secs]
+*******************************第二次回收测试*************************************************************
+0.166: [GC (System.gc()) [PSYoungGen: 3903K->776K(75776K)] 3903K->784K(249344K), 0.0012172 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
+0.167: [Full GC (System.gc()) [PSYoungGen: 776K->0K(75776K)] [ParOldGen: 8K->632K(173568K)] 784K->632K(249344K), [Metaspace: 3186K->3186K(1056768K)], 0.0052358 secs] [Times: user=0.00 sys=0.00, real=0.01 secs]
+  *******************************第三次回收测试*************************************************************
+0.146: [GC (System.gc()) [PSYoungGen: 3903K->936K(75776K)] 3903K->944K(249344K), 0.0013891 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
+0.147: [Full GC (System.gc()) [PSYoungGen: 936K->0K(75776K)] [ParOldGen: 8K->631K(173568K)] 944K->631K(249344K), [Metaspace: 3179K->3179K(1056768K)], 0.0051963 secs] [Times: user=0.14 sys=0.00, real=0.01 secs]
+ *******************************第四次回收测试*************************************************************
+ 0.151: [GC (System.gc()) [PSYoungGen: 3903K->840K(75776K)] 3903K->848K(249344K), 0.0013022 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
+ 0.152: [Full GC (System.gc()) [PSYoungGen: 840K->0K(75776K)] [ParOldGen: 8K->634K(173568K)] 848K->634K(249344K), [Metaspace: 3188K->3188K(1056768K)], 0.0056116 secs] [Times: user=0.00 sys=0.00, real=0.02 secs]

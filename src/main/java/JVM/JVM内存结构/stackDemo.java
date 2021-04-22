@@ -1,4 +1,4 @@
-package JVM内存结构;
+package JVM.JVM内存结构;
 
 /**
  * @ClassName stack  https://blog.csdn.net/rongtaoup/article/details/89142396
