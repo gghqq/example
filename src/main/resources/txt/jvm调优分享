@@ -41,7 +41,16 @@ CMS流程：初始标记(CMS-initial-mark) -> 并发标记(CMS-concurrent-mark) 
 -XX:+UseParNewGC                设置年轻代为并行收集。可与CMS收集同时使用。JDK5.0以上，JVM会根据系统配置自行设置，所以无需再设置此值。
 -XX:+UseConcMarkSweepGC         设置年老代为CMS并发收集。
 -XX:+CMSParallelRemarkEnabled   CMS开启并行remark。
--XX:+CMSScavengeBeforeRemark    强制remark之前开始一次minor gc，减少remark的暂停时间。
+-XX:+CMSScavengeBeforeRemark    强制remark之前开始一次minor gc，减少remark的暂停时间。大大减轻了扫描年轻代的负担，
+-XX:UseCMSInitiatingOccupancyOnly 虚拟机会根据收集的数据决定是否触发（线上环境建议带上这个参数，不然会加大问题排查的难度）
+-XX:CMSInitiatingOccupancyFraction 老年代使用率达到阈值
+-XX:CMSInitiatingPermOccupancyFraction 永久代的使用率达到阈值
+-XX:+UseG1GC                    设置G1回收算法
+-XX:G1HeapRegionSize            指定G1每个内存块大小(默认把内存按照2048均分), 大小区间只能是1M,2M,4M,8M,32M
+-XX:MaxGCPauseMillis	        设置G1 mixedgc 收集过程目标时间，默认值200ms
+-XX:G1NewSizePercent	        新生代最小值，默认值5%
+-XX:G1MaxNewSizePercent	        新生代最大值，默认值60%
+-XX:InitiatingHeapOccupancyPercent=80  触发G1的老年代占比(80%)
 -Xss            设置每个线程的堆栈大小。JDK5.0以后每个线程堆 栈大小为1M，以前每个线程堆栈大小为256K。
                 根据应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一 个进程内的线程数还是有限制的，不能无限生成，
                 经验值在3000~5000左右。线程栈的大小是个双刃剑，如果设置过小，可能会出现栈溢出，特别是在该线程内有递归、大的循环时出现溢出的可能性更大，
