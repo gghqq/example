@@ -79,9 +79,9 @@ G1(Garbage First) 优先处理垃圾多的内存块.-----------------阿里面�
     当G1的eden块不够分配时会触发young GC,活跃对象会拷贝到survivor或者晋升old.当old占比达到触发标准时触发mixed gc,除了回收e,还会回收部分o.
     mixed gc过程: 第一步 初始标记(initial mark),主要标记GC root可达对象,整个过程STW(stop-the-world),
                  第二步 根区扫描,为那些将要到达老年代的引用扫描survivor区.
-                 第二步和应用线程并发标记(concurrent mark).标记GC对象衍生出去的可达对象,并记录各块存活情况.
-                 第三步最终标记(remark),整个过程STW.标记并发过程中遗漏的或者发生变化的对象
-                 第四步垃圾清除过程(clean up).整个过程STW
+                 第三步和应用线程并发标记(concurrent mark).标记GC对象衍生出去的可达对象,并记录各块存活情况.
+                 第四步最终标记(remark),整个过程STW.标记并发过程中遗漏的或者发生变化的对象
+                 第五步垃圾清除过程(clean up).整个过程STW
     如果对象内存分配速度过快，mixed gc来不及回收，导致老年代被填满，就会触发一次full gc，G1的full gc算法就是单线程执行的serial old gc，会导致异常长时间的暂停时间，需要进行不断的调优，尽可能的避免full gc.
     目标是多处理器机器、大内存机器。它高度符合垃圾收集暂停时间的目标，同时实现高吞吐量
 
