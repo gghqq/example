@@ -67,3 +67,8 @@ java内存组成介绍：堆(Heap)和非堆(Non-heap)内存
     3.初始化:执行类构造器<clinit>()方法的过程.
             虚拟机保证一个类的<clinit>()方法在多线程环境中被正确的枷锁和同步,如果多个线程去同时初始化一个类,则只有一个线程去执行这个类的<clinit>()方法,其他都要阻塞等待. 可以通过此方式创建线程安全的单例类
 
+七.JVM类加载器
+    1.启动类加载器.用来加载java核心类库.无法被java程序直接引用.负责加载JAVA_HOME/lib下面的核心类库或者-Xbootclasspath指定的jar包加载到内存中
+    2.扩展类加载器.用来加载java扩展库.java虚拟机的实现会提供一个扩展库目录.负责将JAVA_HOME/lib/ext或者-Djava.ext.dir指定位置中的类库加载到内存中.开发者可以直接使用标准扩展类加载器
+    3.系统类加载器.根据java应用的类路径来加载java类.通过ClassLoader.getSystemClassLoader()来获取它
+    4.用户自定义类加载器,通过集成java.lang.ClassLoader类的方式实现

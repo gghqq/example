@@ -1,4 +1,4 @@
-package thread.util;
+package util.thread;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;

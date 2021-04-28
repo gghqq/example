@@ -1,4 +1,4 @@
-package thread.util;
+package util.thread;
 
 /**
  * @ClassName ThreadLocalUtil

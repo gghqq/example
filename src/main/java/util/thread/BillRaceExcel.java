@@ -1,4 +1,4 @@
-package thread.util;
+package util.thread;
 
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
