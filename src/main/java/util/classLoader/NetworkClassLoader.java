@@ -73,8 +73,8 @@ public class NetworkClassLoader extends ClassLoader {
     public static void main(String[] args) {
         String url = "http://localhost:8080/ClassloaderTest/classes";
         NetworkClassLoader ncl = new NetworkClassLoader(url);
-        String basicClassName = "com.example.CalculatorBasic";
-        String advancedClassName = "com.example.CalculatorAdvanced";
+        String basicClassName = "util.classLoader.netWorkClassLoaderDemo.CalculatorBasic";
+        String advancedClassName = "util.classLoader.netWorkClassLoaderDemo.CalculatorAdvanced";
         try {
             Class<?> clazz = ncl.loadClass(basicClassName);  // 加载一个版本的类
             ICalculator calculator = (ICalculator) clazz.newInstance();  // 创建对象

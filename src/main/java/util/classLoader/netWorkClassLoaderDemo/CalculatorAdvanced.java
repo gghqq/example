@@ -11,7 +11,7 @@ public class CalculatorAdvanced implements ICalculator {
 
     @Override
     public String calculate(String expression) {
-        return "Result is " + expression;
+        return "2.0 Result is " + expression;
     }
 
     @Override

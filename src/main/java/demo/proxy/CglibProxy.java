@@ -33,6 +33,9 @@ public class CglibProxy {
             System.out.println("这是String方法");
         }
     }
+    public void getClassLoader(){
+        System.out.println("通过文件加载到了该类");
+    }
 
     static class MethodInterceptorImpl implements MethodInterceptor{
 

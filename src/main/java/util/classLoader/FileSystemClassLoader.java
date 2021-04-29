@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 /**
  * @ClassName A
  * @Description:
- * 类 FileSystemClassLoader继承自类java.lang.ClassLoader。在java.lang.ClassLoader类的常用方法中，一般来说，自己开发的类加载器只需要覆写 findClass(String name)方法即可。
  * java.lang.ClassLoader类的方法loadClass()封装了前面提到的代理模式的实现。该方法会首先调用findLoadedClass()方法来检查该类是否已经被加载过；
  * 如果没有加载过的话，会调用父类加载器的loadClass()方法来尝试加载该类；如果父类加载器无法加载该类的话，就调用findClass()方法来查找该类。
  * 因此，为了保证类加载器都正确实现代理模式，在开发自己的类加载器时，最好不要覆写 loadClass()方法，而是覆写 findClass()方法。
@@ -29,7 +28,7 @@ public class FileSystemClassLoader extends ClassLoader {
         byte[] classData = getClassData(name);  // 获取类的字节数组
         if (classData == null) {
             throw new ClassNotFoundException();
-        } else {
+        } else { //将字节码转为class
             return defineClass(name, classData, 0, classData.length);
         }
     }
@@ -62,21 +61,23 @@ public class FileSystemClassLoader extends ClassLoader {
 
 
     public static void main(String[] args) {
-        new FileSystemClassLoader().testClassIdentity();
+        testClassIdentity();
     }
 
-    public void testClassIdentity() {
-        String classDataRootPath = "C:\\Users\\JackZhou\\Documents\\NetBeansProjects\\classloader\\build\\classes";
+    public static void testClassIdentity() {
+        String classDataRootPath = "D:\\work-space\\idea-work-space\\example\\src\\main\\java";
         FileSystemClassLoader fscl1 = new FileSystemClassLoader(classDataRootPath);
         FileSystemClassLoader fscl2 = new FileSystemClassLoader(classDataRootPath);
-        String className = "com.example.Sample";
+        String className = "util.classLoader.Simple";
         try {
             Class<?> class1 = fscl1.loadClass(className);  // 加载Sample类
             Object obj1 = class1.newInstance();  // 创建对象
             Class<?> class2 = fscl2.loadClass(className);
             Object obj2 = class2.newInstance();
-            Method setSampleMethod = class1.getMethod("setSample", java.lang.Object.class);
-            setSampleMethod.invoke(obj1, obj2);
+            Method sout = class1.getMethod("sout");
+            sout.invoke(obj1);
+            Method setSample = class1.getMethod("setSample",Object.class); //获取他的setSimple方法
+            setSample.invoke(obj1,obj2); //把o2创建的实例当做参数传入该方法
         } catch (Exception e) {
             e.printStackTrace();
         }
