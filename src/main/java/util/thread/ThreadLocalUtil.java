@@ -10,6 +10,8 @@ package util.thread;
 public class ThreadLocalUtil {
 
         private static final ThreadLocal<Object> local = new ThreadLocal<>();
+//        ThreadLocal提供了一个withInitial()方法统一初始化所有线程的ThreadLocal的值：
+        private static final ThreadLocal<Object> localInit = ThreadLocal.withInitial(()-> 20) ;
 
         public static void setLocal(Object o){
             local.set(o);

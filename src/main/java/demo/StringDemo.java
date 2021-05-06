@@ -3,7 +3,7 @@ package demo;
 import java.util.Arrays;
 
 /**
- * @ClassName String
+ * @ClassName String  https://www.cnblogs.com/xiaoxi/p/6036701.html
  * @Description
  * String 每次操作都会生成新的对象,
  * StringBuilder 和 StringBuffer 则不会,如果频繁更改字符串内容建议使用StringBuilder

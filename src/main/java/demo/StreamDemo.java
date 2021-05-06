@@ -1,13 +1,10 @@
-package stream;
+package demo;
 
 
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
@@ -19,13 +16,13 @@ import java.util.stream.Stream;
 
 public class StreamDemo {
     public static void main(String[] args){
-        List<User> lists = Lists.newArrayList(new User(6, "张三",Lists.newArrayList("戴尔","惠普"))
-                ,new User(1, "张三",Lists.newArrayList("联想","小米")));
+        List<Uuser> lists = Lists.newArrayList(new Uuser(6, "张三",Lists.newArrayList("戴尔","惠普"))
+                ,new Uuser(1, "张三",Lists.newArrayList("联想","小米")));
 
-        List<User> lists1 = Lists.newArrayList(new User(2, "李四",Lists.newArrayList("小米","联想"))
-                ,new User(3, "王五",Lists.newArrayList("华为","鸿基"))
+        List<Uuser> lists1 = Lists.newArrayList(new Uuser(2, "李四",Lists.newArrayList("小米","联想"))
+                ,new Uuser(3, "王五",Lists.newArrayList("华为","鸿基"))
                 //这里加一个与lists重复的数据
-                ,new User(1, "张三",Lists.newArrayList("联想","小米")));
+                ,new Uuser(1, "张三",Lists.newArrayList("联想","小米")));
 
         // 计算这个list中出现 "张三" id的值的和
         int sum = lists.stream().filter(u -> "张三".equals(u.getName())).mapToInt(u -> u.getId()).sum();
@@ -44,9 +41,9 @@ public class StreamDemo {
     }
 
 }
-class User{
+class Uuser{
 
-    public User(Integer id, String name,List<String> computers) {
+    public Uuser(Integer id, String name,List<String> computers) {
         this.id = id;
         this.name = name;
         this.computers = computers;
