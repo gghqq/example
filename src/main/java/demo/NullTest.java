@@ -1,6 +1,11 @@
 package demo;
 
+import com.google.common.collect.Lists;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName NullTest
@@ -22,13 +27,17 @@ public class NullTest {
 //         if(A = finish && B==finish){
 //             c todo
 //         }
-        int n = 0;
-            do{
-                System.out.println(n);
-                n++;
-            }while (n<10);
-
-
+//        int n = 0;
+//            do{
+//                System.out.println(n);
+//                n++;
+//            }while (n<10);
+//
+        List<Object> detailVOS  = new LinkedList<>();
+        List<Long> tradeDetailsIds = Lists.newArrayList();
+        detailVOS.parallelStream()
+                .filter(d->!tradeDetailsIds.contains(d))
+                .collect(Collectors.toList());
         System.out.println();
     }
 }

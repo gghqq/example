@@ -1,0 +1,23 @@
+流的方向划分：分为 输入流， 输出流
+流的传输单位划分： 分为 字节流（8位字节），字符流（16位的字符,例如有些中文如果读取字符的话可能会乱码,所以编码表可以确定汉字有多少字节 字节流+编码表）
+流的角色划分： 分为 节点流，处理流
+    节点流是直接连接数据源的流，可以直接向数据源（特定的IO设备，如硬盘，网络，其他程序）读写数据。
+    处理流通过构造方法接收一个节点流，对节点流使用装饰者模式增加更多的功能，处理流必须依赖于一个节点流，因为只有节点流最终可以将数据流输入输出到IO设备中。
+字节流:
+    InputStream(字节输入流):
+        FileInputStream:从文件中读取信息。
+        ByteArrayInputStream: 字节数组输入流,
+        ObjectInputStream：序列化时使用 一般和ObjectOutputStream一起使用
+        FilterInputStream: 过滤输入流,为基础的输入流提供一些额外的操作。
+    OutputStream(字节输出流):
+        FileOutPutStream: 文件输出流对文件进行操作
+        ByteArrayOutputStream: 字节数组输出流
+        ObjectOutputStream: 序列化时使用 一般和ObjectInputStream一起使用
+        FilterOutputStream:过滤输出流,为基础的输出流提供一些额外的操作。
+字符流:
+    Reader(字符输入流):
+        FileReader:文件输入流
+        BufferedReader: 带缓冲区的字符输入流
+    Writer(字符输出流):
+        FileWriter:文件输出流
+        BufferedWriter:带缓冲区的字符输出流

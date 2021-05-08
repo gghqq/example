@@ -1,0 +1,11 @@
+https://arthas.aliyun.com/doc/arthas-tutorials.html?language=cn&id=case-web-console
+https://arthas.aliyun.com/doc/quick-start.html
+//用户案例
+wget https://arthas.aliyun.com/arthas-boot.jar   //下载Arthas启动程序
+java -jar arthas-boot.jar --target-ip 0.0.0.0 //启动后他会列出所有java进程.根据序号选择Enter
+dashboard 查看当前jvm运行概况
+thread  会打印线程ID 的栈
+jad来反编译Main Class
+watch命令来查看函数的返回值：  watch demo.MathGame primeFactors returnObj
+如果只是退出当前的连接，可以用quit或者exit命令。Attach到目标进程上的arthas还会继续运行，端口会保持开放，下次连接时可以直接连接上。
+如果想完全退出arthas，可以执行stop命令。
