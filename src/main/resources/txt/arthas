@@ -4,8 +4,28 @@ https://arthas.aliyun.com/doc/quick-start.html
 wget https://arthas.aliyun.com/arthas-boot.jar   //下载Arthas启动程序
 java -jar arthas-boot.jar --target-ip 0.0.0.0 //启动后他会列出所有java进程.根据序号选择Enter
 dashboard 查看当前jvm运行概况
-thread  会打印线程ID 的栈
-jad来反编译Main Class
-watch命令来查看函数的返回值：  watch demo.MathGame primeFactors returnObj
+jad 来反编译Main Class
 如果只是退出当前的连接，可以用quit或者exit命令。Attach到目标进程上的arthas还会继续运行，端口会保持开放，下次连接时可以直接连接上。
 如果想完全退出arthas，可以执行stop命令。
+
+options save-result true   执行结果存日志 结果会异步保存在：{user.home}/logs/arthas-cache/result.log，请定期进行清理，以免占据磁盘空间.
+
+
+Arthas 排查函数调用异常
+curl   http://localhost/user/0  访问 http://localhost/user/0 ，会返回500异常
+
+watch com.example.demo.arthas.user.UserController * '{params, throwExp}'   其实就是监控该类方法调用的参数和异常
+watch com.example.demo.arthas.user.UserController * '{params, throwExp}' -x 2  打印异常的详细参数
+watch com.example.demo.arthas.user.UserController * returnObj 'params[0] > 100'  条件支持 例如参数>100
+watch com.example.demo.arthas.user.UserController * "{params[0],throwExp}" -e 只捕获异常参数
+watch com.example.demo.arthas.user.UserController * '{params, returnObj}' '#cost>200' 捕获耗时大于200毫秒的请求
+loader,clazz,method,target,params,returnObj,throwExp,isBefore,isThrow,isReturn 内置对象
+
+thread 所有线程信息
+thread 16     查看具体线程的栈
+thread -n 3  参数n用来指定最忙的前N个线程并打印堆栈
+thread -b 参数b用来指定找出当前阻塞其他线程的线程
+thread -n 3 -i 5000  查看5秒内的CPU使用率top n线程栈
+
+
+sc -d com.example.demo.arthas.user.UserController | grep classLoaderHash  查找UserController的ClassLoader
