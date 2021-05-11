@@ -27,10 +27,10 @@ public class SimpleJobDemo implements SimpleJob {
 
         switch (shardingContext.getShardingItem()) {
             case 0:
-                System.out.println("分片0执行的任务");
+                System.out.println("分片0执行的任务: " + shardingContext.getShardingParameter());
                 break;
             case 1:
-                System.out.println("分片1执行的任务");
+                System.out.println("分片1执行的任务: " + shardingContext.getShardingParameter());
                 break;
             case 2:
                 System.out.println("没有第三个分片");
