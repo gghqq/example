@@ -29,7 +29,7 @@ public class ElasticJobConfig {
 	@Bean(initMethod = "init",name = "theSimpleJob")
 	public JobScheduler simpleJob(SimpleJobDemo job) {
 		//job cron表达式 分片数 备注
-		return addSimpleJobScheduler(job,"*/2 * * * * ?",2,"simpleJob");
+		return addSimpleJobScheduler(job,"*/2 * * * * ?",2,"simpleJob","0=分片0的参数,1=分片1的参数");
 	}
 //
 //	@Bean(initMethod = "init",name = "theDataflowJob")
@@ -51,14 +51,14 @@ public class ElasticJobConfig {
 	}
 
 
-	private JobScheduler addSimpleJobScheduler(SimpleJob job, String cron, int count, String desc){
+	private JobScheduler addSimpleJobScheduler(SimpleJob job, String cron, int count, String desc,String shardingItemParameters){
 		 LiteJobConfiguration jobConfiguration = LiteJobConfiguration
 				.newBuilder(
 						new SimpleJobConfiguration(
 								JobCoreConfiguration.newBuilder(job.getClass().getName(), cron, count)
 										.misfire(false)
 										.description(desc)
-										.shardingItemParameters("0=分片0的参数,1=分片1的参数")
+										.shardingItemParameters(shardingItemParameters)
 										.build(),
 								job.getClass().getCanonicalName())).overwrite(true).build();
 		return new SpringJobScheduler(job, zookeeperRegistryCenter,jobConfiguration);
