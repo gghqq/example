@@ -27,6 +27,7 @@
         </dependency>
 
 
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -47,7 +48,12 @@
             <artifactId>hutool-all</artifactId>
             <version>5.3.10</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/cglib/cglib -->
         <dependency>

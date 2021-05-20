@@ -1,11 +1,11 @@
 package demo;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Lists;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @ClassName NullTest
@@ -16,28 +16,24 @@ import java.util.stream.Collectors;
 
 public class NullTest {
     public static void main(String[] args){
-//        String[] a = {"1","2","3","4"};
-//        System.out.println(a[3]);
-//        假如此时我希望执行完A后执行B 才可以执行C
-//        if(A = finish){
-//            if(B = finish){
-//               C todo
-//            }
-//        }优化后
-//         if(A = finish && B==finish){
-//             c todo
-//         }
-//        int n = 0;
-//            do{
-//                System.out.println(n);
-//                n++;
-//            }while (n<10);
-//
-        List<Object> detailVOS  = new LinkedList<>();
-        List<Long> tradeDetailsIds = Lists.newArrayList();
-        detailVOS.parallelStream()
-                .filter(d->!tradeDetailsIds.contains(d))
-                .collect(Collectors.toList());
-        System.out.println();
+         ArrayList<Object> objects = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(objects)) {
+            System.out.println(objects.size());
+        }else {
+            System.out.println(11111);
+        }
+        int i = 0;
+        System.out.println(++i);
+        System.out.println(i);
+
     }
+    private static BigDecimal subtract(BigDecimal amount, BigDecimal taxAmount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0 || taxAmount == null || taxAmount.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return amount.subtract(taxAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+    }
+
+
+
 }
