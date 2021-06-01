@@ -25,19 +25,76 @@ InnoDB 和 MyISAM区别?
 持久性（durability） 一旦事务提交，那么它对数据库中的对应数据的状态的变更就会永久保存到数据库中。--即使发生系统崩溃或机器宕机等故障，只要数据库能够重新启动，那么一定能够将其恢复到事务成功结束的状态
 MySQL事务的四个特性中ACD三个特性是通过Redo Log（重做日志）和Undo Log 实现的，而 I（隔离性）是通过Lock（锁）来实现。
 
+并发下事务会产生的问题!!!
+1.脏读. 指事务A读到了事务B还未提交事务的数据.  例: A开始事务,读到1000修改为2000,未提交事务->B开始事务,读到2000,->A回滚提交事务->B读到的2000就为脏数据   产生数据不一致的主要原因是并发操作破坏了事务的隔离性。
+2.不可重复读.指在一个事务里两次读取的数据不一致.  A开始事务->读到1000->B开始事务->取走100,提交事务->剩余900->A再次读到为900
+3.幻读. 前后多次读取，数据总量不一致 例如:事务A在执行读取操作，需要两次统计数据的总量，前一次查询数据总量后，此时事务B执行了新增数据的操作并提交后，这个时候事务A读取的数据总量和之前统计的不一样
+
+
 MVCC，Multi-Version Concurrency Control，多版本并发控制。这项技术使得InnoDB的事务隔离级别下执行一致性读操作有了保证, 就是为了查询一些正在被另一个事务更新的行，并且可以看到它们被更新之前的值。
 MVCC在mysql中的实现
-（1）DB_TRX_ID字段，6字节。表示插入或更新行的最后一个事务的事务标识符。此外，删除在内部被视为更新，其中行中的特殊位被设置为将其标记为已删除。
-（2）DB_ROLL_PTR字段，7字节，叫做回滚指针（roll pointer）。回滚指针指向写入回滚段的撤消日志（Undo Log）。如果行已更新，则撤消日志包含重建更新前该行内容所需的信息。
+（1）DB_TRX_ID字段，6字节。用来存储的每次对某条聚簇索引记录进行修改的时候的事务id。此外，删除操作在内部被视为更新，其中行中的特殊位被设置为将其标记为已删除。
+（2）DB_ROLL_PTR字段，7字节，叫做回滚指针（roll pointer）。存了一个指针，它指向这条聚簇索引记录的上一个版本的位置，通过它来获得上一个版本的记录信息 如果行已更新，则撤消日志包含重建更新前该行内容所需的信息。
 （3）DB_ROW_ID字段，6字节。包含一个随着新行插入而单调增加的行ID，如果innodb自动生成聚集索引，则该索引包含行ID值。否则，DB_ROW_ID列不会出现在任何索引中。
+ ReadView : ReadView中主要就是有个列表来存储我们系统中当前活跃着的读写事务，也就是begin了还未提交的事务。 已提交读和可重复读的区别就在于它们生成ReadView的策略不同。
+ 1.例如当前列表事务[80,100]
+ 如果你要访问的记录版本的事务id为50，比当前列表最小的id80小，那说明这个事务在之前就提交了，所以对当前活动的事务来说是可访问的。
+ 如果你要访问的记录版本的事务id为90,发现此事务在列表id最大值和最小值之间，那就再判断一下是否在列表内，如果在那就说明此事务还未提交，所以版本不能被访问。如果不在那说明事务已经提交，所以版本可以被访问。
+ 如果你要访问的记录版本的事务id为110，那比事务列表最大id 100都大，那说明这个版本是在ReadView生成之后才发生的，所以不能被访问。
+ 已提交读隔离级别下的事务在每次查询的开始都会生成一个独立的ReadView,而可重复读隔离级别则在第一次读的时候生成一个ReadView，之后的读都复用之前的ReadView。
 
-用排他锁锁定该行
-把该行修改前的值拷贝到Undo Log中
-修改当前行的值，填写事务编号，使回滚指针指向Undo Log中的修改前的行
-记录Redo Log，包括Undo Log中的变化
+mysql语句优化
+1、尽量少用select *  因为会增加不必要的消耗，select 后面直接加上需要的字段名。
+2、IN 包含的值不应过多
+IN本身这个操作消耗就比较高，如果IN里面是连续的数值，则可以用between代替，IN里面的字段如果是添加了索引，效率还是可以的，目前测试一万以内还是可以，但是超过了结果可能会有点爆炸，不要问我为什么
+3、in和exists、not in 和 not exists
+exists以外层表为驱动表，先被访问，适合于外表小而内表大的情况。
+in则是先执行子查询，适合外表大而内表小的情况，
+一般情况是不推荐使用not in，因为效率非常低，
+eg：
+1)select * from table_a where table_a.id not in (select table_b.id from table_b)
+2)select * from table_a left join table_b on table_a.id = table_b.id where table_b.id is null
+语句2的效率是要高于语句1的，SQL的结果是获取到在table_a中存在但是table_b中不存在的数据，如果直接用not in是不走索引的，而且在table_b比较大的时候效率会非常低，实际工作中我试了一下直接not in，然后数据达到一万条的时候大概需要150S左右才能查出数据（感谢DBA和运维不杀之恩），我采取的方法是，先查出两个表的交集，这样得到的表会小很多，而且是用的in，效率会高很多，然后再用not in，最终的效果也是一样，但是时间只要2.56S，然后采取语句2的关联表来处理，时间缩短到了1.42S，基本上效率是比较高的，当然理想的是在1S内。
+4、尽量少用or，同时尽量用union all 代替union
+or两边的字段如果有不走索引的会导致整个的查询不走索引，从而导致效率低下，这时可以使用union all或者union，而两者的区别是union是将两个结果合并之后再进行唯一性的过滤操作，效率会比union all低很多，但是union all需要两个数据集没有重复的数据。
+5、分段和分页查询
+在扫描行数较多的情况下可以采取分段查询，循环遍历，结果合并处理，
+使用合理的分页方式，在数据表量级逐渐增加的时候，limit分页查询的效率会降低。
+1）select id,col from table limit 888888,1000
+2）select id,col from table where id > 888887 limit 1000
+取前一页的最大行数的id，然后根据这个id来限制下一页的起点。
+6、不建议使用%前缀模糊查询
+like "%abc"和like "%abc%"会导致索引失效而进行全文搜索。
 
-当事务正常提交时，InnoDB只需要更改事务状态为commit即可，不需要做其他额外的工作
-回滚（rollback）需要根据当前回滚指针从Undo Log中找出事务修改前的版本，并恢复。如果事务影响的行非常多，回滚则可能会很慢，根据经验值没提交的事务行数在1000~10000之间，
-InnoDB效率还是非常高的（唐成-数据库多版本实现内幕）。
-commit效率高，rollback代价大
+慢查询日志
+响应时间超过long_query_tine的SQL，被记录到慢查询日志中。
+// SHOW VARIABLES LIKE '%slow_query_log%' ; 查看是否开启，默认没开启
+// set global slow_quary_log = 1; 开启，仅本数据库有效，重启MySQL之后失效。
+// show variables like '%long_query_time%'; 查看当前多少秒算慢
+// set global long_query_time = 3; 设置慢的阙值时间
+// show global status like '%Slow_queries%'; 查看当前数据库有多少条慢SQL
+
+**Show Profile **
+是MySQL提供可以用来分析当前会话中语句执行的资源情况，可以用于SQL的调优的测量。
+默认关闭，并保存最近15次结果；
+set profiling=on;   开启
+SELECT * FROM `s_oas_oas_collect_amount_task`  执行测试的SQL
+show profiles; 查看执行的SQL query_Id
+show profile for query 16;
+show profile block io,cpu for query 45;
+show profile cpu,block io,memory,swaps,context switches,source for query 70;
+通过上面的一些查询 大体可以看出这条SQL语句执行的时候哪些地方占用的时间太大了。
+这次看到的是Copying to tmp table on disk(把内存中临时表复制到磁盘)和converting HEAP to MyISAM(查询结果太大，内存不够用了往磁盘上搬) 占有的时间太多。Creating tmp table (创建临时表，拷贝数据到临时表，用完再删除)
+网上查了一下发现可以修改一下tmp_table_size和max_heap_table_size两个参数来调整，使得大数据量的查询时不用将结果集拷贝到物理磁盘。
+
+
+
+
+
+
+
+
+
+
+
 

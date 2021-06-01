@@ -2,10 +2,13 @@ package demo;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @ClassName NullTest
@@ -16,24 +19,29 @@ import java.util.Collection;
 
 public class NullTest {
     public static void main(String[] args){
-         ArrayList<Object> objects = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(objects)) {
-            System.out.println(objects.size());
-        }else {
-            System.out.println(11111);
-        }
-        int i = 0;
-        System.out.println(++i);
-        System.out.println(i);
+//
+//        User u1 = new User();
+//        System.out.println(u1);
+//        User u2 = new User();
+//        System.out.println(u2);
+//        User u3 = Optional.ofNullable(u1).orElse(u2);
+//        System.out.println(u3);
+//
+//
+//        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+//        System.out.println(Optional.ofNullable("A").orElseGet(()->soutB()));
 
+        String s = "";
+        System.out.println(StringUtils.isEmpty(s));
+        System.out.println(StringUtils.isBlank(s));
     }
-    private static BigDecimal subtract(BigDecimal amount, BigDecimal taxAmount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) == 0 || taxAmount == null || taxAmount.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return amount.subtract(taxAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+
+    private static String soutB(){
+        System.out.println("B");
+        return "B";
     }
 
-
-
+    private static class User{
+    }
 }
