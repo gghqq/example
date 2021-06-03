@@ -31,9 +31,10 @@ public class NullTest {
 //        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 //        System.out.println(Optional.ofNullable("A").orElseGet(()->soutB()));
 
-        String s = "";
+        String s = "123123";
         System.out.println(StringUtils.isEmpty(s));
         System.out.println(StringUtils.isBlank(s));
+        System.out.println(s.contains("123"));
     }
 
 

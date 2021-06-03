@@ -88,6 +88,14 @@ show profile cpu,block io,memory,swaps,context switches,source for query 70;
 网上查了一下发现可以修改一下tmp_table_size和max_heap_table_size两个参数来调整，使得大数据量的查询时不用将结果集拷贝到物理磁盘。
 
 
+show status like  'table%'; //分析表的锁定
+ Table_locks_immediate：产生表级锁定的次数；
+ Table_locks_waited：出现表级锁定争用而发生等待的次数，不能立即获取锁的次数，每等待一次锁值加1；
+show status like  'innodb_row_lock%';  //分析行的锁定
+ Innodb_row_lock_time_avg 平均等待时长
+ Innodb_row_lock_waits 等待总次数
+ Innodb_row_lock_time 等待总时长
+
 
 
 
