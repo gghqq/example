@@ -97,8 +97,121 @@ show status like  'innodb_row_lock%';  //分析行的锁定
  Innodb_row_lock_time 等待总时长
 
 
+ 分库分表
+ https://baijiahao.baidu.com/s?id=1622441635115622194
 
 
+
+MySQL的redo日志和undo日志分别有什么用？
+1）redo 作用：保证事务的持久性 一般讨论数据写入时，在MySQL中，一般叫事务操作，根据事务的ACID特性，如何保证一个事务提交后Durability的保证？而这就是 redo log 的作用。
+当向MySQL写用户数据时，先写redo log，然后redo log根据"某种方式"持久化到磁盘，变成redo log file，用户数据则在"buffer"中(比如数据页、索引页)。
+如果发生宕机，则读取磁盘上的 redo log file 进行数据的恢复。从这个角度来说，MySQL 事务的持久性是通过 redo log 来实现的。
+
+2）undo 作用：实现事务回滚 Undo log是InnoDB MVCC事务特性的重要组成部分。当我们对记录做了变更操作时就会产生undo记录，Undo记录默认被记录到系统表空间(ibdata)中，
+但从5.6开始，也可以使用独立的Undo 表空间。 Undo记录中存储的是老版本数据，当一个旧的事务需要读取数据时，为了能读取到老版本的数据，需要顺着undo链找到满足其可见性的记录。
+当版本链很长时，通常可以认为这是个比较耗时的操作。 大多数对数据的变更操作包括INSERT/DELETE/UPDATE，其中INSERT操作在事务提交前只对当前事务可见，
+因此产生的Undo日志可以在事务提交后直接删除（谁会对刚插入的数据有可见性需求呢！！），而对于UPDATE/DELETE则需要维护多版本信息，
+在InnoDB里，UPDATE和DELETE操作产生的Undo日志被归成一类，即update_undo。
+
+
+MySQL有哪些锁？以及各种锁的作用？
+MySQL里面的锁大致可以分成全局锁、表级锁和行锁三类.
+MySQL里面表级别的锁有两种：一种是表锁，一种是元数据锁（meta data lock，MDL）
+一.表锁的语法是lock tables … read/write。可以用unlock tables主动释放锁，也可以在客户端断开的时候自动释放。lock tables语法除了会限制别的线程的读写外，也限定了本线程接下来的操作对象
+    另一类表级的锁是MDL。MDL不需要显式使用，在访问一个表的时候会被自动加上。MDL的作用是，保证读写的正确性。当对一个表做增删改查操作的时候，加MDL读锁；当要对表做结构(注意是表结构)变更操作的时候，加MDL写锁
+    读锁之间不互斥，因此可以有多个线程同时对一张表增删改查
+    读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性。因此，如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完才能开始执行
+    1.如果安全地给小表加字段？
+    首先要解决长事务，事务不提交，就会一直占着DML锁。在MySQL的information_schema库的innodb_trx表中，可以查到当前执行的事务。如果要做DDL变更的表刚好有长事务在执行，要考虑先暂停DDL，或者kill掉这个长事务
+    2.如果要变更的表是一个热点表，虽然数据量不大，但是上面的请求很频繁，而又不得不加个字段，该怎么做？
+    在alter table语句里面设定等待时间，如果在这个指定的等待时间里面能够拿到MDL写锁最好，拿不到也不要阻塞后面的业务语句，先放弃。之后再通过重试命令重复这个过程
+二.行锁
+    在InnoDB事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。这个就是两阶段锁协议
+    如果事务中需要锁多个行，要把最可能造成锁冲突、最可能影响并发度的锁尽量往后放
+    例. A买电影票  A账户扣钱->影院账户加钱->记录一条交易流水    假如C来买票也会对影院账户加钱,所以影院账户这个操作最容易发生事务冲突, 可以改成A账户扣钱->记录一条交易流水->影院账户加钱 最大程度减少了锁的等待,提升了并发度
+
+死锁和死锁检测
+    在并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁
+    一种策略是，直接进入等待，直到超时。这个超时时间可以通过参数innodb_lock_wait_timeout来设置
+    SHOW VARIABLES LIKE 'innodb_lock_wait_timeout'; //查看死锁时间
+    SET innodb_lock_wait_timeout=5;
+    另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数innodb_deadlock_detect设置为on，表示开启这个逻辑
+    SHOW VARIABLES LIKE 'innodb_deadlock_detect';
+为什么我只查一行的语句，也执行这么慢？
+    第一类：查询长时间不返回  show processlist命令，查看当前语句处于什么状态
+     1.等MDL锁
+         state字段Waiting for table metadata lock 代表有线程在表上持有MDL锁.把select语句堵住了
+         通过查询sys.schema_table_lock_waits这张表直接找出造成阻塞的process id，把这个连接kill命令断开即可（MySQL启动时需要设置performance_schema=on，相比于设置为off会有10%左右的性能损失）
+         SHOW VARIABLES LIKE 'performance_schema';
+         select blocking_pid from sys.schema_table_lock_waits;
+    2.等flush
+        线程状态为Waiting for table flush 代表有一个线程政要对表t做flush操作
+        出现Waiting for table flush状态的可能情况是有一个 flush tables命令被别的语句堵住了，然后它有堵住了select语句
+    3.等行锁
+        由于访问id=1这个记录时要加读锁，如果这时候已经有一个事务在这行记录上持有一个写锁
+        sessionA启动了事务，占有写锁，还不提交，是导致sessionB被堵住的原因
+   第二类：查询慢
+        sessionA先用start transaction with consistent snapshot命令开启一个事务，建立事务的一致性读（又称为快照读。使用的是MVCC机制读取undo log中的已经提交的数据。所以它的读取是非阻塞的），之后sessionB执行update语句
+        sessionB执行完100万次update语句后，生成100万个回滚日志
+        select * from t where id=1 lock in share mode的语句是当前读，因此会直接读到1000001这个结果，速度很快；而select * from t where id=1这个语句是一致性读，因此需要从1000001开始，依次执行undo log，执行了100万次以后，才将1这个结果返回
+
+MYSQL缓存 https://www.cnblogs.com/yueyun00/p/10898677.html  https://www.cnblogs.com/applelife/p/11576295.html
+	1.1缓存机制说明
+		缓存SQL文本和结果,用kV的形式保存在服务器内存中,如果有相同的SQL,直接从缓存中获取结果.省掉了解析优化执行SQL的过程
+	1.2缓存失效
+		表结构或数据!发生改变时,缓存将会失效,相关的缓存条目kv也会消失.例如instert,update,delete,alter,drop table等
+	1.3使用场景
+		频繁更新的表,查询缓存不合适.数据不变且有大量相同SQL查询的表,适用缓存提升性能
+	2.1命中条件
+		缓存的数据结构是HASH表. 以SQL,数据库名,客户端协议作为key.
+		在判断命中前,MYSQL不会解析SQL,而是适用SQL去查询缓存.SQL任何字符不同都会不命中
+		如果查询有不确定数据例如 like now,current_date() 都不会被缓存
+	3.1工作流程
+		服务器接收SQL，以SQL和一些其他条件为key查找缓存表,如果缓存命中，则直接返回缓存.如果缓存没有命中，则执行SQL查询，包括SQL解析、优化等。执行完SQL查询结果以后，将SQL查询结果写入缓存表
+	4.缓存失败
+		当表正在写入数据时，则这个表的缓存将会处于失效状态,在InnoDB中，如果某个事务修改了表，则这个表的缓存在事务提交前都会处于失效状态
+	5.缓存的内存管理
+		1.在内存中开辟一块空间.其中大概有40K的空间用来维护缓存和元数据.例如空间内存,数据表和查询结果的映射,SQL和查询结果的映射
+		2.将大内存块分为小内存块,每个小块存储自身的类型,大小和查询结果数据,还有前后内存块的指针
+		3.SQL未命中缓存,会在查询开始的就去申请一块空间.此时缓存数据大小未知.如果超出申请内存块大小就再申请,否则就会释放,所以可能会造成内存碎片.
+	6.缓存的使用判断
+		1.缓存命中率 = 缓存命中次数 (Qcache_hits) / 查询次数 (Com_select)
+		2.写入率 = 缓存写入次数 (Qcache_inserts) / 查询次数 (Qcache_inserts)
+		3.比率 = 命中次数 (Qcache_hits) / 写入次数 (Qcache_inserts)//高性能MySQL中称之为比较能反映性能提升的指数，一般来说达到3:1则算是查询缓存有效，而最好能够达到10:1
+	7.缓存参数配置
+		1.查看缓存相关配置
+			SHOW VARIABLES LIKE '%query_cache%';
+		2.mysql.ini配置
+			2.1 query_cache_type 是否打开缓存 OFF（0）：关闭 , ON（1）,DEMAND（2）：按需使用查询缓存，只有明确写了SQL_CACHE的查询才会写入缓存
+				如果query_cache_type为1而又不想利用查询缓存中的数据，可以用下面的SQL：SELECT SQL_NO_CACHE * FROM my_table WHERE condition;
+				如果值为2，要使用缓存的话，需要使用SQL_CACHE开关参数： SELECT SQL_CACHE * FROM my_table WHERE condition;
+			2.2 query_cache_size  缓存使用的总内存空间大小，单位是字节，这个值必须是1024的整数倍；
+				默认情况下query_cache_size为0，表示为查询缓存预留的内存为0，则无法使用查询缓存
+				设置query_cache_size的值 SET GLOBAL query_cache_size = 134217728; -- 注意值如果设得太小不会生效
+			2.3 query_cache_min_res_unit 分配内存块时的最小单位大小
+			2.4 query_cache_limit  MySQL能够缓存的最大结果，如果超出，则增加 Qcache_not_cached的值，并删除查询结果
+			2.5 query_cache_wlock_invalidate  如果某个数据表被锁住，是否仍然从缓存中返回数据，默认是OFF，表示仍然可以返回
+			2.6  GLOBAL STATUS 中关于缓存的参数
+				Qcache_free_blocks：缓存池中空闲块的个数
+				Qcache_free_memory：缓存中空闲内存量
+				Qcache_hits：缓存命中次数
+				Qcache_inserts：缓存写入次数
+				Qcache_lowmen_prunes：因内存不足删除缓存次数
+				Qcache_not_cached：查询未被缓存次数,例如查询结果超出缓存块大小,查询中包含可变函数等
+				Qcache_queries_in_cache：当前缓存中缓存的SQL数量
+				Qcache_total_blocks：缓存总block数
+			2.7 减少缓存碎片的策略
+				选择合适的block大小 ,使用 FLUSH QUERY CACHE 命令整理碎片，这个命令在整理缓存期间，会导致其他连接无法使用查询缓存
+	清空缓存的命令
+		RESET QUERY CACHE; // 从查询缓存中移出所有查询。
+		FLUSH TABLES; //关闭所有打开的表，同时该操作将会清空查询缓存中的内容。	
+	9. InnoDB查询缓存
+		InnoDB存储引擎会对每个表设置一个事务计数器，里面存储当前最大的事务ID
+		当一个事务提交时，InnoDB会使用MVCC中系统最大的事务ID更新当前表的计数器
+		只有比这个最大ID大的事务能使用查询缓存，其他比这个ID小的事务则不能使用查询缓存
+		在InnoDB中，所有加锁操作的事务都不使用任何查询缓存
+		查询必须是完全相同的(逐字节相同)才能够被认为是相同的。
+		查询字符串由于其它原因使用不同的数据库、不同的协议版本或者不同的默认字符集都会被认为是不同的查询而分别进行缓存。
 
 
 

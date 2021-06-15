@@ -18,23 +18,23 @@ import java.util.concurrent.Executors;
  **/
 
 public class NullTest {
-    public static void main(String[] args){
-//
-//        User u1 = new User();
-//        System.out.println(u1);
-//        User u2 = new User();
-//        System.out.println(u2);
-//        User u3 = Optional.ofNullable(u1).orElse(u2);
-//        System.out.println(u3);
-//
-//
-//        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-//        System.out.println(Optional.ofNullable("A").orElseGet(()->soutB()));
+    public static void main(String[] args) throws InterruptedException {
+        List<Integer> list = new ArrayList<>(100000);
+        for (int i = 0; i < 100000; i++) {
+            list.add(i);
+        }
 
-        String s = "123123";
-        System.out.println(StringUtils.isEmpty(s));
-        System.out.println(StringUtils.isBlank(s));
-        System.out.println(s.contains("123"));
+       List<Integer> list1 = Collections.synchronizedList(new ArrayList<>(list.size()));
+//       List<Integer> list1 =new Vector<>(list.size());
+
+        System.out.println("添加完毕!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        list.parallelStream().forEach(l->{
+                list1.add(l);
+
+        });
+        Thread.sleep(1000);
+        System.out.println("数据大小:  " +list1.size());
+        list1.parallelStream().forEach(System.out::print);
     }
 
 
