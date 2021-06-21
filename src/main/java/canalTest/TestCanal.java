@@ -1,4 +1,4 @@
-//package demo.canalTest;
+//package canalTest;
 //
 //import com.alibaba.otter.canal.client.CanalConnector;
 //import com.alibaba.otter.canal.client.CanalConnectors;

@@ -1,4 +1,4 @@
-package demo.elastic_job.config;
+package elastic_job.config;
 
 
 import com.dangdang.ddframe.job.api.dataflow.DataflowJob;
@@ -11,10 +11,8 @@ import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 
-import demo.elastic_job.DataflowJobDemo;
-import demo.elastic_job.SimpleJobDemo;
+import elastic_job.SimpleJobDemo;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 

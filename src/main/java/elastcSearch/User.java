@@ -1,4 +1,4 @@
-package demo.elastcSearch;
+package elastcSearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

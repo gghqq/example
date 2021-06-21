@@ -1,11 +1,10 @@
-package demo.elastic_job.config;
+package elastic_job.config;
 
 
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 //@Configuration
 @ConditionalOnExpression("'127.0.0.1:2181'.length() > 0")
