@@ -137,23 +137,6 @@ MySQL里面表级别的锁有两种：一种是表锁，一种是元数据锁（
     SET innodb_lock_wait_timeout=5;
     另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数innodb_deadlock_detect设置为on，表示开启这个逻辑
     SHOW VARIABLES LIKE 'innodb_deadlock_detect';
-为什么我只查一行的语句，也执行这么慢？
-    第一类：查询长时间不返回  show processlist命令，查看当前语句处于什么状态
-     1.等MDL锁
-         state字段Waiting for table metadata lock 代表有线程在表上持有MDL锁.把select语句堵住了
-         通过查询sys.schema_table_lock_waits这张表直接找出造成阻塞的process id，把这个连接kill命令断开即可（MySQL启动时需要设置performance_schema=on，相比于设置为off会有10%左右的性能损失）
-         SHOW VARIABLES LIKE 'performance_schema';
-         select blocking_pid from sys.schema_table_lock_waits;
-    2.等flush
-        线程状态为Waiting for table flush 代表有一个线程政要对表t做flush操作
-        出现Waiting for table flush状态的可能情况是有一个 flush tables命令被别的语句堵住了，然后它有堵住了select语句
-    3.等行锁
-        由于访问id=1这个记录时要加读锁，如果这时候已经有一个事务在这行记录上持有一个写锁
-        sessionA启动了事务，占有写锁，还不提交，是导致sessionB被堵住的原因
-   第二类：查询慢
-        sessionA先用start transaction with consistent snapshot命令开启一个事务，建立事务的一致性读（又称为快照读。使用的是MVCC机制读取undo log中的已经提交的数据。所以它的读取是非阻塞的），之后sessionB执行update语句
-        sessionB执行完100万次update语句后，生成100万个回滚日志
-        select * from t where id=1 lock in share mode的语句是当前读，因此会直接读到1000001这个结果，速度很快；而select * from t where id=1这个语句是一致性读，因此需要从1000001开始，依次执行undo log，执行了100万次以后，才将1这个结果返回
 
 MYSQL缓存 https://www.cnblogs.com/yueyun00/p/10898677.html  https://www.cnblogs.com/applelife/p/11576295.html
 	1.1缓存机制说明
@@ -215,7 +198,23 @@ MYSQL缓存 https://www.cnblogs.com/yueyun00/p/10898677.html  https://www.cnblog
 
 
 
+为什么我只查一行的语句，也执行这么慢？  select * from information_schema.processlist ORDER BY TIME desc
+    第一类：查询长时间不返回  show processlist命令，查看当前语句处于什么状态
+     1.等MDL锁
+         state字段Waiting for table metadata lock 代表有线程在表上持有MDL锁.把select语句堵住了
+         通过查询sys.schema_table_lock_waits这张表直接找出造成阻塞的process id，把这个连接kill命令断开即可（MySQL启动时需要设置performance_schema=on，相比于设置为off会有10%左右的性能损失）
+         SHOW VARIABLES LIKE 'performance_schema';
+         select blocking_pid from sys.schema_table_lock_waits;
+    2.等flush
+        线程状态为Waiting for table flush 代表有一个线程政要对表t做flush操作
+        出现Waiting for table flush状态的可能情况是有一个 flush tables命令被别的语句堵住了，然后它有堵住了select语句
+    3.等行锁
+        由于访问id=1这个记录时要加读锁，如果这时候已经有一个事务在这行记录上持有一个写锁
+        sessionA启动了事务，占有写锁，还不提交，是导致sessionB被堵住的原因
+   第二类：查询慢
+        sessionA先用start transaction with consistent snapshot命令开启一个事务，建立事务的一致性读（又称为快照读。使用的是MVCC机制读取undo log中的已经提交的数据。所以它的读取是非阻塞的），之后sessionB执行update语句
+        sessionB执行完100万次update语句后，生成100万个回滚日志
+        select * from t where id=1 lock in share mode的语句是当前读，因此会直接读到1000001这个结果，速度很快；而select * from t where id=1这个语句是一致性读，因此需要从1000001开始，依次执行undo log，执行了100万次以后，才将1这个结果返回
 
 
-
-
+SHOW ENGINE INNODB STATUS  查询数据库死锁记录

@@ -21,16 +21,17 @@ import java.lang.reflect.Proxy;
 public class JavaStaticProxyOrDynamicDemo {
     public static void main(String[] args) {
         Hello h = new HelloWorld();
-//JAVA静态代理
-//        StaticProxy p = new StaticProxy(h);
-//        p.sout();
+//    JAVA静态代理 代理类对实现类做代理
+        StaticProxy p = new StaticProxy(h);
+        p.sout();
 //JAVA动态代理
 //        实现动态代理时，我们使用了Proxy.newProxyInstance这个方法
 //        loader： 类加载器
-//        interfaces： 代理类要实现的接口列表
+//        interfaces：  代理类要实现的接口列表
 //        h: 代理处理handler
         Hello hp = (Hello) Proxy.newProxyInstance(
-                h.getClass().getClassLoader(), h.getClass().getInterfaces()
+                  h.getClass().getClassLoader() //类加载器
+                , h.getClass().getInterfaces()  //代理类要实现的接口列表
                 , new InterfaceInvocationHandler(h));
         hp.sout();
         hp.sout2();

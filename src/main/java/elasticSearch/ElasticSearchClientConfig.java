@@ -1,4 +1,4 @@
-package elastcSearch;
+package elasticSearch;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
@@ -25,7 +25,7 @@ public class ElasticSearchClientConfig {
     public RestHighLevelClient restHighLevelClient(){
         RestHighLevelClient http = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("127.0.0.1", 9200, "http")
+                        new HttpHost("10.200.50.108", 9200, "http")
                 )
         );
         return  http;

@@ -27,7 +27,7 @@ import java.util.concurrent.*;
  *
  * get方法（获取结果）
  *    已执行完可以获取结果, 执行中,队列中都会阻塞.
- *    任务取消抛出 CancellationException。  任务执行过程中抛出异常抛出 ExecutionException 异常 ,任务被中断 抛出InterruptedException。 任务超时，抛出 TimeoutException，
+ *    任务取消抛出 CancellationException。任务执行过程中抛出异常抛出 ExecutionException 异常 ,任务被中断 抛出InterruptedException。 任务超时，抛出 TimeoutException，
  * cancel方法（取消任务的执行）
  *    任务还没有开始,这个任务就会被正常取消，未来也不会被执行，那么 cancel 方法返回 true
  *    任务已经完成，或者之前已经被取消过了，那么执行 cancel 方法则代表取消失败，返回 false

@@ -1,0 +1,4 @@
+ crontab -l  linux定时任务
+ crontab -e  linux定时任务
+ find / -name   查找文件
+ printenv  查看环境变量

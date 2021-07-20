@@ -1,4 +1,4 @@
-package elastcSearch;
+package elasticSearch;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

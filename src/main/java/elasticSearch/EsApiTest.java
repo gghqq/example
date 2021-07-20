@@ -1,4 +1,4 @@
-package elastcSearch;
+package elasticSearch;
 
 /**
  * @ClassName EsApiTest

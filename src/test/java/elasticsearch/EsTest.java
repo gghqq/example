@@ -1,8 +1,11 @@
 package elasticsearch;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
-import elastcSearch.User;
+import demo.App;
+import elasticSearch.User;
+import javafx.application.Application;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -23,19 +26,28 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +61,8 @@ import java.util.concurrent.TimeUnit;
  * @Date 2021/6/15 21:28
  **/
 
-@SpringBootTest
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class)
 public class EsTest {
 
     @Autowired
@@ -65,15 +78,15 @@ public class EsTest {
 
     @Test
         //测试获取索引
-    void testExistIndex() throws IOException {
-        GetIndexRequest request = new GetIndexRequest("kuang_index");
+    public void testExistIndex() throws IOException {
+        GetIndexRequest request = new GetIndexRequest("oas_rece_acc");
         boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
         System.out.println(exists);
     }
 
     @Test
         //测试删除索引
-    void testDeleteIndex() throws IOException {
+    public void testDeleteIndex() throws IOException {
         DeleteIndexRequest request = new DeleteIndexRequest("kuang_index");
         AcknowledgedResponse delete = client.indices().delete(request, RequestOptions.DEFAULT);
         System.out.println(delete);
@@ -82,7 +95,7 @@ public class EsTest {
 
     @Test
         //测试添加文档
-    void testAddDocument() throws IOException {
+    public void testAddDocument() throws IOException {
         User user = new User("狂神说", 3);
         IndexRequest request = new IndexRequest("kuang_index"); //创建请求
 
@@ -97,8 +110,8 @@ public class EsTest {
 
     @Test
         //获取文档,判断是否存在
-    void testIsExists() throws IOException {
-        GetRequest getRequest = new GetRequest("kuang_index", "1");
+    public void testIsExists() throws IOException {
+        GetRequest getRequest = new GetRequest("kuang_index");
         getRequest.fetchSourceContext(new FetchSourceContext(false)); //忽略_source上下文
         getRequest.storedFields("_none_");
 
@@ -109,7 +122,7 @@ public class EsTest {
 
     @Test
 //获取文档的信息
-    void testGetDocument() throws IOException {
+    public void testGetDocument() throws IOException {
         GetRequest getRequest = new GetRequest("kuang_index", "1");
         GetResponse documentFields = client.get(getRequest, RequestOptions.DEFAULT);
         System.out.println(documentFields.getSourceAsString()); //打印文档内容
@@ -118,7 +131,7 @@ public class EsTest {
 
     @Test
 //获取文档的信息
-    void testUpdateDocument() throws IOException {
+    public void testUpdateDocument() throws IOException {
         UpdateRequest updateRequest = new UpdateRequest("kuang_index", "1");
         updateRequest.timeout(TimeValue.timeValueSeconds(3));
 
@@ -132,7 +145,7 @@ public class EsTest {
 
     @Test
 //获取文档的信息
-    void testDeleteDocument() throws IOException {
+    public void testDeleteDocument() throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest("kuang_index", "1"); //假如不存在 not_found
         deleteRequest.timeout(TimeValue.timeValueSeconds(3));
 
@@ -148,26 +161,36 @@ public class EsTest {
         //TermQueryBuilder 精确查询构造器
         //MatchAllQueryBuilder 匹配全部构造器
 
-    void testSearch() throws IOException {
-        SearchRequest request = new SearchRequest("kuang_index");
+    public void testSearch() throws IOException {
+        SearchRequest request = new SearchRequest("oas_receivables");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         // MatchAllQueryBuilder matchAllQueryBuilder = QueryBuilders.matchAllQuery(); //匹配所有
-        //查询条件,使用QueryBuilders 快速构建
-        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("name", "kuangshen1"); //精确匹配
+        //查询条件,使用QueryBuilders 快速构建    boolQuery.must()    .mustNot   should
+        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("business_type", "9"); //精确匹配
+        RangeQueryBuilder sn_create_time = QueryBuilders.rangeQuery("sn_create_time").gte("1614700800000");//大于等于
+        RangeQueryBuilder sn_create_time1 = QueryBuilders.rangeQuery("sn_create_time").lte("1614700800000");//小于等于
+        QueryBuilders.fuzzyQuery("name","wang").fuzziness(Fuzziness.ONE); //差一个字符也能匹配出来例如 wang1 wang2
+        AggregationBuilders.avg("business_type_avg").field("business_type");//平均  max  min
+        AggregationBuilders.terms("business_type_group").field("business_type");//分组
         //条件
+        searchSourceBuilder.query(sn_create_time);
         searchSourceBuilder.query(termQueryBuilder);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        //分页
-        searchSourceBuilder.from(1);
-        searchSourceBuilder.size(10);
+        searchSourceBuilder.sort("sn_create_time", SortOrder.DESC);//排序
+        searchSourceBuilder.fetchSource("business_type","business_type"); //前者select  business_type from  后者select !business_type from
+
+
+//        //分页
+//        searchSourceBuilder.from(1);
+//        searchSourceBuilder.size(10);
         //高亮
-        HighlightBuilder highlightBuilder = new HighlightBuilder();
-        highlightBuilder.field("title"); //高亮字段
-        highlightBuilder.requireFieldMatch(false); //关闭多个高亮,只高亮第一个
-        highlightBuilder.preTags("<span style='color:red'>");
-        highlightBuilder.postTags("</span>");
-        searchSourceBuilder.highlighter(highlightBuilder);
+//        HighlightBuilder highlightBuilder = new HighlightBuilder();
+//        highlightBuilder.field("title"); //高亮字段
+//        highlightBuilder.requireFieldMatch(false); //关闭多个高亮,只高亮第一个
+//        highlightBuilder.preTags("<span style='color:red'>");
+//        highlightBuilder.postTags("</span>");
+//        searchSourceBuilder.highlighter(highlightBuilder);
 
         request.source(searchSourceBuilder);
         SearchResponse search = client.search(request, RequestOptions.DEFAULT);
@@ -176,21 +199,22 @@ public class EsTest {
         for (SearchHit hit : search.getHits().getHits()) {
             System.out.println(hit.getSourceAsMap());
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            Map<String, HighlightField> highlightFields = hit.getHighlightFields();// 获取高亮字段
-            HighlightField title = highlightFields.get("title");
-            Text[] fragments = title.fragments();
-            String n_title = "";
-            for (Text fragment : fragments) {
-                n_title += fragment;
-            }
-            sourceAsMap.put("title",n_title); //高亮内容替换原来内容
+//            Map<String, HighlightField> highlightFields = hit.getHighlightFields();// 获取高亮字段
+//            HighlightField title = highlightFields.get("title");
+//            Text[] fragments = title.fragments();
+//            String n_title = "";
+//            for (Text fragment : fragments) {
+//                n_title += fragment;
+//            }
+//            sourceAsMap.put("title",n_title); //高亮内容替换原来内容
+            System.out.println(JSONObject.toJSONString(sourceAsMap));
 
         }
     }
 
     @Test
         //批量插入数据
-    void testBulkRequest() throws IOException {
+    public void testBulkRequest() throws IOException {
         BulkRequest request = new BulkRequest();
         request.timeout("10s");
         ArrayList<User> users = Lists.newArrayList(new User("kuangshen1", 3),
@@ -199,7 +223,7 @@ public class EsTest {
                 new User("kkk", 4));
 
         for (int i = 0; i < users.size(); i++) {
-            request.add(new IndexRequest("kuang_index") // .不同操作对应不同请求
+            request.add(new IndexRequest("kuang_index") // .不同操作对应不同请求 DeleteRequest
                     .id(i + "")
                     .source(JSON.toJSONString(users.get(i)), XContentType.JSON)
             );

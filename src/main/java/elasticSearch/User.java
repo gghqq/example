@@ -1,4 +1,4 @@
-package elastcSearch;
+package elasticSearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

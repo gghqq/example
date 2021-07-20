@@ -1,0 +1,13 @@
+[ReentrantLock参考文档](https://blog.csdn.net/fuyuwei2015/article/details/83719444)     
+ReentrantLock的两个概念:CAS,AQS  
+####CAS:
+>CAS(CompareAndSwap)有三个操作数,内存值V,预期值A,替换值B.当预期值A和内存值V一致时才替换为B.该操作是一个原子操作(不可被中断的一个或一系列操作).  
+Java中,CAS主要是由sun.misc.Unsafe这个类通过JNI调用CPU底层指令实现.    
+>>CAS具有的问题:   
+>>- ABA问题(原来是A,修改为B后又改为A),解决思路,加标识.  
+>>- 循环时间长占用CPU开销大   
+####AQS:
+>AQS(AbstractQueuedSynchronizer)是一个用于构建锁和同步容器的框架。事实上concurrent包内许多类都是基于AQS构建，例如ReentrantLock，Semaphore，CountDownLatch，ReentrantReadWriteLock，FutureTask等。AQS解决了在实现同步容器时设计的大量细节问题。   
+>![](../picture/AQS架构图.png)  
+>[AQS详情](./AQS)
+>

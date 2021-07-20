@@ -1,0 +1,4 @@
+wget ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/matthewdva:/build:/EPEL:/el7/RHEL_7/x86_64/webkitgtk-2.4.9-1.el7.x86_64.rpm
+然后 yum install webkitgtk-2.4.9-1.el7.x86_64.rpm 搞定，收工
+
+

@@ -1,0 +1,22 @@
+[synchronize参考文档](https://zhuanlan.zhihu.com/p/89152074)  
+###一. synchronized的作用
+ *  1.确保线程互斥的访问同步代码
+ *  2.保证共享变量的修改能够及时可见
+ *  3.有效解决重排序问题
+ ***
+###二. Synchronized的用法  
+ *  1.修饰普通方法
+ *  2.修饰静态方法  
+ ***静态方法的同步本质上是对类的同步（静态方法本质上是属于类的方法，而不是对象上的方法）,在实际使用过程中,
+ 需要注意使用锁的对象是单个实例还是多个.***
+ *  3.修饰代码块  
+ ***
+ ###通过反编译查看synchronize的具体实现  
+ ![](../picture/synchronize方法上锁反编译.png)
+ ![](../picture/synchronize在方法使用.jpg)
+ 1.如果monitor的进入数为0，则该线程进入monitor，然后将进入数设置为1，该线程即为monitor的所有者。   
+ 2.如果线程已经占有该monitor，只是重新进入，则进入monitor的进入数加1.    
+ 3.如果其他线程已经占用了monitor，则该线程进入阻塞状态，直到monitor的进入数为0，再重新尝试获取monitor的所有权。    
+ 4.执行monitorexit的线程必须是objectref所对应的monitor的所有者。     
+ 5.指令执行时，monitor的进入数减1，如果减1后进入数为0，那线程退出monitor，不再是这个monitor的所有者。其他被这个monitor阻塞的线程可以尝试去获取这个 monitor 的所有权。
+ 
