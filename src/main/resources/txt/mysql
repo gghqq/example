@@ -218,3 +218,7 @@ MYSQL缓存 https://www.cnblogs.com/yueyun00/p/10898677.html  https://www.cnblog
 
 
 SHOW ENGINE INNODB STATUS  查询数据库死锁记录
+	SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCKS  1：查看当前的事务
+	SELECT * FROM INFORMATION_SCHEMA.INNODB_LOCK_WAITS 2：查看当前锁定的事务
+	SELECT * FROM INFORMATION_SCHEMA.INNODB_TRX 3：查看当前等锁的事务
+	show processlist

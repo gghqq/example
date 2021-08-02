@@ -18,7 +18,7 @@ import java.net.URL;
 public class HtmlParseUtil {
 
     public static void main(String[] args) throws IOException {
-        String url = "www.baidu.com";
+        String url = "http://10.200.50.112:8880/job/qdp-portrayal-api/configure";
 //        解析网页
         Document document = Jsoup.parse(new URL(url), 30000);
         Element elementById = document.getElementById("sss");//页面元素标签id

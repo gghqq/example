@@ -135,6 +135,7 @@
     <orderEntry type="library" name="Maven: org.apache.rocketmq:rocketmq-logging:4.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.rocketmq:rocketmq-srvutil:4.5.2" level="project" />
     <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.2" level="project" />
+    <orderEntry type="library" name="Maven: com.github.ben-manes.caffeine:caffeine:2.5.5" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-tx:5.2.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.elasticsearch.client:elasticsearch-rest-high-level-client:7.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.elasticsearch:elasticsearch:7.10.0" level="project" />
