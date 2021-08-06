@@ -142,7 +142,7 @@ MYSQL缓存 https://www.cnblogs.com/yueyun00/p/10898677.html  https://www.cnblog
 	1.1缓存机制说明
 		缓存SQL文本和结果,用kV的形式保存在服务器内存中,如果有相同的SQL,直接从缓存中获取结果.省掉了解析优化执行SQL的过程
 	1.2缓存失效
-		表结构或数据!发生改变时,缓存将会失效,相关的缓存条目kv也会消失.例如instert,update,delete,alter,drop table等
+		表结构或数据!发生改变时,缓存将会失效,相关的缓存条目kv也会消失.例如insert,update,delete,alter,drop table等
 	1.3使用场景
 		频繁更新的表,查询缓存不合适.数据不变且有大量相同SQL查询的表,适用缓存提升性能
 	2.1命中条件
