@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @Author agan
  * @Date 2021/5/10 22:39
  **/
-//@SpringBootApplication(scanBasePackages ={"canal","elasticSearch","rabbitMQ","elastic_job"})
+//@SpringBootApplication(scanBasePackages ={"canal","elasticSearch","rabbitMQ.md","elastic_job"})
 @SpringBootApplication(scanBasePackages ={"elasticSearch"})
 @EnableTransactionManagement
 public class App {

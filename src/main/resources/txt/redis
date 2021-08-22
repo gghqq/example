@@ -31,12 +31,47 @@ set hello world nx px 1000(单位为毫秒)
 3.重入锁解决方案
 @redis/RedisLock.java
 ```
-###5.Redis缓存穿透和缓存雪崩
+###5.Redis缓存穿透和缓存雪崩 ,热key,大key问题
 ```
-1.缓存雪崩是指某时间段缓存集中过期失效,请求绕开缓存,直接请求数据库.
+  1.缓存雪崩是指某时间段缓存集中过期失效,请求绕开缓存,直接请求数据库.
 造成雪崩的方式有两种:redis宕机. 缓存集中过期
 解决方案:key过期时间设置固定时间+随机秒
-2.缓存穿透是查询数据库和缓存都没有的数据.会一直请求数据库.
+  2.缓存穿透是查询数据库和缓存都没有的数据.会一直请求数据库.
 解决方式 1.缓存空对象,代码维护简单. 2.布隆过滤器 @GuavaBloomFilter.java
+  3.热key问题:瞬间有几十万的请求去访问redis上某个固定的key，从而压垮缓存服务.或者秒杀商品,集中请求这一件
+解决方案:1.利用二级缓存.比如ecache或hashmap 存放在JVM. 直接访问JVM  
+         2.备份热key.伪代码
+        const M = N(集群数) * 2
+        //生成随机数
+        random = GenRandom(0, M)
+        //构造备份新key
+        bakHotKey = hotKey + “_” + random
+        data = redis.GET(bakHotKey)
+        if data == NULL {
+        data = GetFromDB()
+        redis.SET(bakHotKey, expireTime + GenRandom(0,5))
+        }
+        3.限流熔断
+    4.大key指value特别大的key。比如很长的字符串，或者很大的set等等
+问题:大key会造成数据倾斜,某个节点内存占用过高.2、当删除大key或者大key自动过期的时候，会造成QPS突降，因为Redis是单线程的缘故
+解决方案:可以将一个大key进行分片处理，比如：将一个大set分成多个小的set。
+```
+##6.redis的内存维护策略
+```
+1.为数据设置超时时间, expire key time 
+2.采用LRU算法动态删除
+    1.volatile-lru：设定超时时间的数据中,删除最不常使用的数据. 这里只未使用的数据
+    2.allkeys-lru：查询所有的key中最近最不常使用的数据进行删除，这是应用最广泛的策略.
+    3.volatile-random：在已经设定了超时的数据中随机删除.
+    4.allkeys-random：查询所有的key,之后随机删除.
+    5.volatile-ttl：查询全部设定超时时间的数据,之后排序,将马上将要过期的数据进行删除操作.
+    6.noeviction：如果设置为该属性,则不会进行删除操作,如果内存溢出则报错返回.
+    7.volatile-lfu：从所有配置了过期时间的键中驱逐使用频率最少的键,这里指使用最少的
+    8.allkeys-lfu：从所有键中驱逐使用频率最少的键
+```
 
+##7.redis持久化
+```
+Redis持久化有RDB和AOF这2种方式。 RDB：将数据库快照以二进制的方式保存到磁盘中。 
+AOF：以协议文本方式，将所有对数据库进行过写入的命令和参数记录到AOF文件，从而记录数据库状态
 ```
