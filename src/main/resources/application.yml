@@ -2,19 +2,19 @@ server:
   port: 8080
 
 #配置rabbitmq
-spring:
-  rabbitmq:
-    username: guest
-    password: guest
-    virtual-host: /
-    host: 127.0.0.1
-    port: 5672
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    database: 0
-  elasticsearch:
-    rest:
-      uris: 127.0.0.1:9200
+#spring:
+#  rabbitmq:
+#    username: guest
+#    password: guest
+#    virtual-host: /
+#    host: 127.0.0.1
+#    port: 5672
+#  redis:
+#    host: 127.0.0.1
+#    port: 6379
+#    database: 0
+#  elasticsearch:
+#    rest:
+#      uris: 127.0.0.1:9200
 
 

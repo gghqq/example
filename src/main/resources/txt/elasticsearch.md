@@ -121,9 +121,39 @@ productID = "KDKE-B-9947-#kL5" OR (productID = "JODL-X-1937-#pV7" AND price  = 3
    }
 }
 ```
+---
+在收件箱中，且没有被读过的  
+不在 收件箱中，但被标注重要的
+```
 
+{
+  "query": {
+      "constant_score": {
+          "filter": {
+              "bool": {
+                 "should": [
+                    { "bool": {
+                          "must": [
+                             { "term": { "folder": "inbox" }}, 
+                             { "term": { "read": false }}
+                          ]
+                    }},
+                    { "bool": {
+                          "must_not": {
+                             "term": { "folder": "inbox" } 
+                          },
+                          "must": {
+                             "term": { "important": true }
+                          }
+                    }}
+                 ]
+              }
+            }
+        }
+    }
+}
 
-
+```
 
 
 ```

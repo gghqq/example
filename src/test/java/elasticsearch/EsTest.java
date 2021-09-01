@@ -117,6 +117,8 @@ public class EsTest {
 
         boolean exists = client.exists(getRequest, RequestOptions.DEFAULT);
         System.out.println(exists);
+
+
     }
 
 
@@ -144,11 +146,10 @@ public class EsTest {
 
 
     @Test
-//获取文档的信息
+    //删除文档的信息
     public void testDeleteDocument() throws IOException {
-        DeleteRequest deleteRequest = new DeleteRequest("kuang_index", "1"); //假如不存在 not_found
+        DeleteRequest deleteRequest = new DeleteRequest("qdp-wain-order", "1432221553743224832"); //假如不存在 not_found
         deleteRequest.timeout(TimeValue.timeValueSeconds(3));
-
         DeleteResponse delete = client.delete(deleteRequest, RequestOptions.DEFAULT);
         System.out.println(delete.status());
     }
