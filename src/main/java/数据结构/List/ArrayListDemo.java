@@ -1,6 +1,7 @@
 package 数据结构.List;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -63,15 +64,46 @@ public class ArrayListDemo {
 
     public static void main(String[] args){
         final ArrayList<String> strings = Lists.newArrayList("1", "2", "3", "4");
-        strings.remove(3);
-        strings.stream().forEach(System.out::println);
-        final Iterator<String> iterator = strings.iterator();
-        while (iterator.hasNext()){
-            String s= iterator.next();
-            if (s.equals(3)) {
-                iterator.remove();
-            }
+//        strings.remove(3);
+//        strings.stream().forEach(System.out::println);
+//        final Iterator<String> iterator = strings.iterator();
+//        while (iterator.hasNext()){
+//            String s= iterator.next();
+//            if (s.equals(3)) {
+//                iterator.remove();
+//            }
+//     }
+        strings.add(0,"头插");
+        strings.add(0,"头插1");
+        strings.add(0,"头插2");
+
+        ArrayList<String> string5 = Lists.newArrayList("8", "9", "10");
+        strings.addAll(string5);
+        string5.clear();
+        strings.forEach(System.out::println);
+
+
+        List<String> ss = new ArrayList<>(520);
+        for (int i=0 ; i < 520; i++){
+            ss.add( "数字:" + i);
         }
 
+        List<String>  s1 = new ArrayList<>(100);
+        ss.forEach( s -> {
+            s1.add(s);
+            if (s1.size()>100) {
+                System.out.println("tag");
+                s1.clear();
+            }
+        });
+        if (CollectionUtils.isNotEmpty(s1)) {
+            System.out.println("tagtag");
+            s1.clear();
+        }
+        ss.clear();
+        System.out.println(ss.size());
+        System.out.println(s1.size());
+
+        System.out.println(Math.floor(Math.random()));
     }
 }
